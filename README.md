@@ -1,6 +1,9 @@
 # Invisible Chat
 This is a message encrypter for [Powercord](https://github.com/powercord-org/powercord "Powercord Website")
 
+## IMPORTANT
+You Need to run the "Install.bat" after you cloned it
+
 ## Install Me
 First `cd` into your powercord plugin directory, then
 the folder you want to clone into is

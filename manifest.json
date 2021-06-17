@@ -1,0 +1,7 @@
+{
+    "name": "InviChat",
+    "version": "0.1.9",
+    "description": "Allows you to send invisible messages to a specified user encrypted in an unusual way",
+    "author": "c0dine & Samm-Cheese",
+    "license": "MIT"
+}

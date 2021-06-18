@@ -136,7 +136,7 @@ module.exports = class ModalComposer extends React.Component {
                   this.state.password
                 )}`), closeModal();
               } catch (e) {
-                this.handleError(e);
+                this.handleError(e), closeModal();
               }
             }}
           >
@@ -156,7 +156,7 @@ module.exports = class ModalComposer extends React.Component {
                 );
                 closeModal();
               } catch (e) {
-                this.handleError(e);
+                this.handleError(e), closeModal();
               }
             }}
           >
@@ -175,6 +175,7 @@ module.exports = class ModalComposer extends React.Component {
   }
 
   handleError(e) {
+    Functions.reply("There has been an Error", e.toString())
     this.setState({ hasError: true });
     this.setState({
       errors: (this.state.errors[this.state.errors.length + 1] = e),

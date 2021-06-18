@@ -34,10 +34,11 @@ const { handler }   = require("./commands/invichat");
 const chatembed     = require("./commands/chatembed");
 const Functions     = require("./components/Functions");
 const Button        = require("./components/icons/Button");
-const ModalComposer = require("./components/ModalComposer");
 const LockIcon      = require("./components/icons/LockIcon");
 const Settings      = require("./components/Settings/Settings");
 const { Lock }      = require("./components/icons/MessageIcon");
+const ModalComposerEncrypt = require("./components/ModalComposerEncrypt");
+const ModalComposerDecrypt = require("./components/ModalComposerDecrypt");
 
 const MiniPopover = getModule(
   (m) => m.default?.displayName === "MiniPopover",
@@ -85,7 +86,7 @@ module.exports = class InviChat extends Plugin {
   ////////////////////////////////////////////////////////////////////////
 
   register() {
-    // Register main command
+    // Register main command (Soon To be Removed)
     powercord.api.commands.registerCommand({
       command: "invichat",
       description: "Send an invisible message",
@@ -147,7 +148,7 @@ module.exports = class InviChat extends Plugin {
           "div",
           {
             className: ".send-invisible-message",
-            onClick: () => open(ModalComposer),
+            onClick: () => open(ModalComposerEncrypt),
           },
           React.createElement(Button)
         );
@@ -202,11 +203,15 @@ module.exports = class InviChat extends Plugin {
 
       if (msgcontent) {
         res.props.children.unshift(
-          React.createElement(LockIcon, {
-            msgcontent: msg.content,
-            msgpassword: Functions.getUserPasswordById(msg.author.id),
-          })
-        );
+          React.createElement("div",
+          {
+            onClick: () => open(() => React.createElement(ModalComposerDecrypt, {
+              author: msg.author.id,
+              content: msg.content
+            }))
+          }, 
+          [React.createElement(LockIcon)])
+        )
       }
       return res;
     });

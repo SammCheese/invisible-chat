@@ -3,6 +3,8 @@ const { imageWH, reply, sendBotMessage } = require("../components/Functions");
 let embed = {
   type: "rich",
   title: "Your Decrypted Message",
+  description: "",
+  image: {},
   color: "0x45f5f5",
   footer: {
     text: "Made with ❤️ by c0dine and Sammy!",

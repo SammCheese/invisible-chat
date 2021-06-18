@@ -24,13 +24,13 @@ module.exports = ({ msgcontent, msgpassword }) => (
         size={Button.Sizes.ICON}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        onClick={() =>
+        /*onClick={() =>
           ComponentDispatch.dispatchToLastSubscribed("INSERT_TEXT", {
             content: `${
               powercord.api.commands.prefix
             }invichat -s ${msgcontent} -p ${msgpassword}`,
           })
-        }
+        }*/
       >
         <Icon
           name="LockClosed"

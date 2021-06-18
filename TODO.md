@@ -13,4 +13,4 @@
 
 ## A note
 
- I will not be working on this plugin 24-7. This plugin is priority to the extent that I can still have time to work on other ones. Becuase of that, I highly encourage and appreciate your help in making this plugin possible and hope to see it grow into a must have in your powercord setups!
+Ill Try to Maintain this Plugin as best as possible!

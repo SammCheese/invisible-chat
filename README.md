@@ -14,7 +14,7 @@ powercord/src/Powercord/plugins
 then run this:
 
 ```console
-git clone https://github.com/powercord-community/invisible-chat
+git clone https://github.com/SammCheese/invisible-chat
 ```
 
 ## How I work

@@ -1,6 +1,6 @@
 {
     "name": "InviChat",
-    "version": "0.1.9",
+    "version": "0.2.0",
     "description": "Allows you to send invisible messages to a specified user encrypted in an unusual way",
     "author": "c0dine & Samm-Cheese",
     "license": "MIT"

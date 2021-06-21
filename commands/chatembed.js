@@ -28,7 +28,7 @@ module.exports = {
       return sendBotMessage(embed)
     }
     embed.description = Data;
-    embed.image = { // Idk but it prevents cached images from reappearing
+    embed.image = { // Idk why but it prevents cached images from reappearing
       url: "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png",
       width: 1,
       height: 1

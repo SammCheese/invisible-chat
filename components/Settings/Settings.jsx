@@ -57,10 +57,11 @@ module.exports = class Settings extends React.Component {
       console.log(user);
       var p = user.id;
       this.info(p.toString())
-        .then((res) => {
+        .then(res => {
           this.props.updateSetting(
             "userPasswords",
-            this.updateUserId(i, p, res.username, res.avatarURL)
+            this.updateUserId(i, p, res.username,
+              'https://cdn.discordapp.com/avatars/'+res.id+'/'+res.avatar+'.webp?size=256')
           );
         })
         .catch((err) => {

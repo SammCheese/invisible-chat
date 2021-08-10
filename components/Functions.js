@@ -1,8 +1,8 @@
-const isImageUrl = require('is-image-url')
-const { getModule, channels } = require("powercord/webpack")
+const isImageUrl = require("is-image-url");
+const { getModule, channels } = require("powercord/webpack");
 
-const { createBotMessage } = getModule([ "createBotMessage" ], false)
-const { receiveMessage }   = getModule([ "receiveMessage" ], false)
+const { createBotMessage } = getModule(["createBotMessage"], false);
+const { receiveMessage } = getModule(["receiveMessage"], false);
 
 // Image width + Height
 exports.imageWH = async (url) => {
@@ -14,7 +14,7 @@ exports.imageWH = async (url) => {
       img.onload = function () {
         res = { width: this.width, height: this.height };
         resolve();
-      }
+      };
     });
     return res;
   }
@@ -34,13 +34,12 @@ let embed = {
 };
 ////////////////////////////////////////////////
 
-
 // Send Botmessage to current Channel
 exports.sendBotMessage = (content) => {
   const received = createBotMessage(channels.getChannelId(), "");
   received.embeds.push(content);
   return receiveMessage(received.channel_id, received);
-}
+};
 
 // If Base Embed Should be Used
 exports.reply = (title, content, footer) => {
@@ -56,7 +55,7 @@ exports.reply = (title, content, footer) => {
       embed
     )
   );
-}
+};
 
 // Handle Errors
 exports.replyError = (content) => {
@@ -66,17 +65,26 @@ exports.replyError = (content) => {
       description: content,
     })
   );
-}
+};
 
 // Map User Passwords
 exports.getUserPasswordById = (id) => {
-  const userPws = powercord.pluginManager.get("invisible-chat").settings.get("userPasswords");
+  const userPws = powercord.pluginManager
+    .get("invisible-chat")
+    .settings.get("userPasswords");
   try {
     for (var i = 0; i < userPws.length; i++) {
       if (userPws[i].id == id) {
-        return userPws[i].password;
+        return (res = {
+          password: userPws[i].password,
+          username: userPws[i].name,
+        });
+      } else {
+        return false;
       }
     }
-  } catch (err) {}
-  return "PASSWORD_HERE";
-}
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
+};

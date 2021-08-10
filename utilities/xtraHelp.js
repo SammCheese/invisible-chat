@@ -69,6 +69,6 @@ module.exports.xtraParse = (args) => {
         newArgs.push(buffer)
         buffer = undefined
     }
-    newArgs = newArgs.filter(a => a !== undefined).map(a => a.split(' ').map(i => i.replace(/"/, '')).join(' '))
+    newArgs = newArgs.filter((a) => a !== undefined).map((a) => a.split(' ').map((i) => i.replace(/"/, '')).join(' '))
     return newArgs
 }

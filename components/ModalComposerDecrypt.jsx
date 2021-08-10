@@ -42,7 +42,10 @@ module.exports = class ModalComposer extends React.Component {
     const userPws = powercord.pluginManager
       .get("invisible-chat")
       .settings.get("userPasswords");
-    const currUser = Functions.getUserPasswordById(this.props.author);
+    var currUser = Functions.getUserPasswordById(this.props.author);
+    if (!currUser) {
+      currUser = false;
+    }
 
     if (this.state.hasError) {
       errorElement = (
@@ -80,9 +83,9 @@ module.exports = class ModalComposer extends React.Component {
           </TextAreaInput>
           <TextAreaInput
             value={
-              this.state.password
-                ? this.state.password
-                : (this.state.password = currUser.password)
+              !this.state.password && currUser
+                ? (this.state.password = currUser.password)
+                : this.state.password
             } // Please... dont ask
             onChange={async (m) => {
               await this.setState({ password: m });

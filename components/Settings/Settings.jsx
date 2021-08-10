@@ -54,10 +54,9 @@ module.exports = class Settings extends React.Component {
   }
   updateUserPreviews() {
     userPasswords.map((user, i) => {
-      console.log(user);
       var p = user.id;
       this.info(p.toString())
-        .then(res => {
+        .then((res) => {
           this.props.updateSetting(
             "userPasswords",
             this.updateUserId(i, p, res.username,
@@ -107,7 +106,7 @@ module.exports = class Settings extends React.Component {
                   name={user.name}
                   opened={user.open}
                   onChange={(p) => {
-                    updateSetting("userPasswords", this.toggle(i, p))
+                    updateSetting("userPasswords", this.toggle(i, p));
                   }}
                 >
                   <h1 style={{ color: "lightgrey", "margin-bottom": "12px" }}>

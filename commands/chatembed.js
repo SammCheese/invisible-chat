@@ -25,7 +25,7 @@ module.exports = {
         width: wh.width,
         height: wh.height,
       };
-      return sendBotMessage(embed)
+      return sendBotMessage(embed);
     }
     embed.description = Data;
     embed.image = { // Idk why but it prevents cached images from reappearing

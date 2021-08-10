@@ -74,17 +74,14 @@ exports.getUserPasswordById = (id) => {
     .settings.get("userPasswords");
   try {
     for (var i = 0; i < userPws.length; i++) {
-      if (userPws[i].id == id) {
-        return (res = {
+      if (userPws[i].id === id) {
+        return res = {
           password: userPws[i].password,
           username: userPws[i].name,
-        });
+        };
       } else {
         return false;
       }
     }
-  } catch (err) {
-    console.log(err);
-    return false;
-  }
+  } catch (err) {}
 };

@@ -1,15 +1,15 @@
-const { join } = require('path');
-const nodeModulesPath = join(__dirname,'node_modules');
-const { existsSync } = require('fs');
-const { execSync } = require('child_process');
+const { join } = require("path");
+const nodeModulesPath = join(__dirname,"node_modules");
+const { existsSync } = require("fs");
+const { execSync } = require("child_process");
 
 function installDeps () {
-  console.log('Installing dependencies, please wait...');
-  execSync('npm install --only=prod', {
+  console.log("Installing dependencies, please wait...");
+  execSync("npm install --only=prod", {
     cwd: __dirname,
     stdio: [ null, null, null ]
   });
-  console.log('Dependencies successfully installed!');
+  console.log("Dependencies successfully installed!");
   window.location.reload()
 }
 
@@ -102,7 +102,7 @@ module.exports = class InviChat extends Plugin {
 
         if (!args.includes("-c")) {
           if (MatchedUrl) {
-            return chatembed.executor(Data, MatchedUrl.toString()+'?'+(new Date().getTime()))
+            return chatembed.executor(Data, MatchedUrl.toString()+"?"+(new Date().getTime()))
           }
           return Functions.reply("Your Decrypted Message", Data);
         }

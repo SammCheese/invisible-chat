@@ -73,15 +73,11 @@ exports.getUserPasswordById = (id) => {
     .get("invisible-chat")
     .settings.get("userPasswords");
   try {
-    for (var i = 0; i < userPws.length; i++) {
-      if (userPws[i].id === id) {
-        return res = {
-          password: userPws[i].password,
-          username: userPws[i].name,
-        };
-      } else {
-        return false;
-      }
-    }
+    const user = userPws.find((user) => user.id === id);
+    if (!user) return false;
+    return (res = {
+      username: user.name,
+      password: user.password,
+    });
   } catch (err) {}
 };

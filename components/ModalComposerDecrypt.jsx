@@ -43,9 +43,6 @@ module.exports = class ModalComposer extends React.Component {
       .get("invisible-chat")
       .settings.get("userPasswords");
     var currUser = Functions.getUserPasswordById(this.props.author);
-    if (!currUser) {
-      currUser = false;
-    }
 
     if (this.state.hasError) {
       errorElement = (

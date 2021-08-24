@@ -10,7 +10,7 @@ const { Button, Icon } = require("powercord/components");
 const buttonClasses = getModule(["button"], false);
 const buttonWrapperClasses = getModule(["buttonWrapper", "pulseButton"], false);
 const buttonTextAreaClasses = getModule(["button", "textArea"], false);
-const { ComponentDispatch } = getModule(["ComponentDispatch"], false);
+
 
 module.exports = ({ msgcontent, msgpassword }) => (
   <Tooltip

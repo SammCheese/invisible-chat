@@ -1,5 +1,4 @@
 const { React, getModuleByDisplayName, getModule, i18n: { Messages } } = require("powercord/webpack");
-const { Tooltip, Icons: { badges: BadgeIcons }} = require('powercord/components');
 
 const Lock = React.memo(() => (
     <div style={{ position:'absolute', right: 10, bottom:4 }}>

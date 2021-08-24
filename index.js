@@ -10,7 +10,7 @@ function installDeps () {
     stdio: [ null, null, null ]
   });
   console.log("Dependencies successfully installed!");
-  window.location.reload()
+  powercord.pluginManager.remount(__dirname);
 }
 
 if (!existsSync(nodeModulesPath)) {

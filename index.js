@@ -86,7 +86,7 @@ module.exports = class InviChat extends Plugin {
   ////////////////////////////////////////////////////////////////////////
 
   register() {
-    // Register main command (Soon To be Removed)
+    // Register main command
     powercord.api.commands.registerCommand({
       command: "invichat",
       description: "Send an invisible message",
@@ -131,14 +131,8 @@ module.exports = class InviChat extends Plugin {
       ChannelTextAreaContainer.type,
       "render",
       (args, res) => {
-        if (
-          !this.can(
-            SEND_MESSAGES,
-            this.getCurrentUser(),
-            this.getChannel(this.getChannelId())
-          ) &&
-          this.getChannelPermissions(this.getChannelId())
-        )
+        if (!this.can(SEND_MESSAGES, this.getCurrentUser(), this.getChannel(this.getChannelId()))
+          && this.getChannelPermissions(this.getChannelId()) != 0n)
           return res;
         const props = findInReactTree(
           res,

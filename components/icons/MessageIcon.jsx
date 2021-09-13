@@ -1,4 +1,4 @@
-const { React, getModuleByDisplayName, getModule, i18n: { Messages } } = require("powercord/webpack");
+const { React } = require("powercord/webpack");
 
 const Lock = React.memo(() => (
     <div style={{ position:'absolute', right: 10, bottom:4 }}>

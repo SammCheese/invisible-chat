@@ -15,6 +15,7 @@ module.exports = () => (
     <Tooltip color="black" postion="top" text="Send a secret message">
         {({ onMouseLeave, onMouseEnter }) => (
             <Button
+                style={{ marginTop: 1 }}
                 look={Button.Looks.BLANK}
                 size={Button.Sizes.ICON}
                 onMouseEnter={onMouseEnter}

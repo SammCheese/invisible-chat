@@ -1,7 +1,7 @@
 const { join } = require("path");
-const nodeModulesPath = join(__dirname,"node_modules");
 const { existsSync } = require("fs");
 const { execSync } = require("child_process");
+const nodeModulesPath = join(__dirname,"node_modules");
 
 function installDeps () {
   console.log("Installing dependencies, please wait...");
@@ -18,16 +18,12 @@ if (!existsSync(nodeModulesPath)) {
   return
 }
 
+// Plugin Start
+
 const { Plugin } = require("powercord/entities");
-const {
-  getModule,
-  React,
-  constants: {
-    Permissions: { SEND_MESSAGES },
-  },
-} = require("powercord/webpack");
+const { getModule,React,constants: { Permissions: { SEND_MESSAGES } } } = require("powercord/webpack");
 const { inject, uninject } = require("powercord/injector");
-const { open } = require("powercord/modal");
+const { open: openModal } = require("powercord/modal");
 const { findInReactTree } = require("powercord/util");
 
 const { handler }   = require("./commands/invichat");
@@ -132,17 +128,17 @@ module.exports = class InviChat extends Plugin {
       "render",
       (args, res) => {
         if (!this.can(SEND_MESSAGES, this.getCurrentUser(), this.getChannel(this.getChannelId()))
-          && this.getChannelPermissions(this.getChannelId()) != 0n)
+          && this.getChannelPermissions(this.getChannelId()) != 0)
           return res;
         const props = findInReactTree(
           res,
-          (r) => r && r.className && !r.className.indexOf("buttons-")
+          (r) => r && r.className && r.className.indexOf("buttons-") == 0
         );
         const el = React.createElement(
           "div",
           {
             className: ".send-invisible-message",
-            onClick: () => open(ModalComposerEncrypt),
+            onClick: () => openModal(ModalComposerEncrypt)
           },
           React.createElement(Button)
         );
@@ -199,7 +195,7 @@ module.exports = class InviChat extends Plugin {
         res.props.children.unshift(
           React.createElement("div",
           {
-            onClick: () => open(() => React.createElement(ModalComposerDecrypt, {
+            onClick: () => openModal(() => React.createElement(ModalComposerDecrypt, {
               author: msg.author.id,
               content: msg.content
             }))

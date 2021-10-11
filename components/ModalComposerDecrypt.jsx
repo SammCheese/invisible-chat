@@ -11,6 +11,7 @@ const { Modal } = require("powercord/components/modal");
 const { close: closeModal } = require("powercord/modal");
 const chatembed = require("../commands/chatembed");
 const Functions = require("./Functions");
+const path = require("path");
 const Steggo = require("stegcloak");
 
 module.exports = class ModalComposer extends React.Component {
@@ -39,8 +40,9 @@ module.exports = class ModalComposer extends React.Component {
 
   render() {
     var errorElement;
+    const foldername = path.basename(path.resolve(__dirname, '..')) || 'invisible-chat';
     const userPws = powercord.pluginManager
-      .get("invisible-chat")
+      .get(foldername)
       .settings.get("userPasswords");
     var currUser = Functions.getUserPasswordById(this.props.author);
 

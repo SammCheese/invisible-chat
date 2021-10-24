@@ -164,11 +164,11 @@ module.exports = class InviChat extends Plugin {
       MessageHeader,
       "default",
       function ([props], res) {
-        const pf = props.childrenMessageContent.props.content;
+        var v = findInReactTree(res, (r) => r && r.message)?.message.content;
         try {
           if (
-            pf[0].includes("\u2061") ||
-            pf[0].includes("\u200d") //This is Awful but it will work for Now
+            v.includes("\u2061") ||
+            v.includes("\u200d") //This is Awful but it will work for Now
           ) {
             res.props.children.props.children[2].props.children.push(
               React.createElement(Lock)

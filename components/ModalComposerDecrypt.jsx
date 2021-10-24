@@ -2,13 +2,10 @@
 const { React } = require("powercord/webpack");
 const { clipboard } = require("electron");
 const { FormTitle, Button } = require("powercord/components");
-const {
-  TextAreaInput,
-  SelectInput,
-  Category,
-} = require("powercord/components/settings");
+const { TextAreaInput, SelectInput, Category,} = require("powercord/components/settings");
 const { Modal } = require("powercord/components/modal");
 const { close: closeModal } = require("powercord/modal");
+
 const chatembed = require("../commands/chatembed");
 const Functions = require("./Functions");
 const path = require("path");

@@ -10,12 +10,14 @@ function installDeps () {
     stdio: [ null, null, null ]
   });
   console.log("Dependencies successfully installed!");
-  powercord.pluginManager.remount(__dirname);
+  setTimeout(() => {
+    powercord.pluginManager.remount(__dirname);
+  }, 2000);
 }
 
 if (!existsSync(nodeModulesPath)) {
   installDeps();
-  return
+  return;
 }
 
 // Plugin Start
@@ -167,13 +169,12 @@ module.exports = class InviChat extends Plugin {
         var v = findInReactTree(res, (r) => r && r.message)?.message.content;
         try {
           if (
-            v.includes("\u2061") ||
-            v.includes("\u200d") //This is Awful but it will work for Now
+            v.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)
           ) {
             res.props.children.props.children[2].props.children.push(
               React.createElement(Lock)
             );
-            return [props], res;
+            return res;
           }
         } catch {
           return res;

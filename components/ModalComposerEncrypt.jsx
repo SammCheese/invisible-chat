@@ -39,6 +39,8 @@ module.exports = class ModalComposer extends React.Component {
     if (
       this.state.secret != "" &&
       this.state.cover.split(" ").length >= 2 &&
+      this.state.cover.split(" ")[1] != "" && // Enforcing the 2 words, space is NOT a valid thing
+      this.state.cover.split(" ")[0] != "" &&
       this.state.password != ""
     ) {
       this.setState({ inputted: true });

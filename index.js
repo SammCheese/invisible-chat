@@ -129,9 +129,6 @@ module.exports = class InviChat extends Plugin {
       ChannelTextAreaContainer.type,
       "render",
       (args, res) => {
-        if (!this.can(SEND_MESSAGES, this.getCurrentUser(), this.getChannel(this.getChannelId()))
-          && this.getChannelPermissions(this.getChannelId()) != 0)
-          return res;
         const props = findInReactTree(
           res,
           (r) => r && r.className && r.className.indexOf("buttons-") == 0
@@ -161,27 +158,29 @@ module.exports = class InviChat extends Plugin {
       d(m)?.toString().includes("MessageContent")
     );
 
-    inject(
-      "invichat-message-indicator",
-      MessageHeader,
-      "default",
-      function ([props], res) {
-        var v = findInReactTree(res, (r) => r && r.message)?.message.content;
-        try {
-          if (
-            v.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)
-          ) {
-            res.props.children.props.children[2].props.children.push(
-              React.createElement(Lock)
-            );
+    if (MessageHeader) {
+      inject(
+        "invichat-message-indicator",
+        MessageHeader,
+        "default",
+        function ([props], res) {
+          var v = findInReactTree(res, (r) => r && r.message)?.message.content;
+          try {
+            if (
+              v.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)
+            ) {
+              res.props.children.props.children[2].props.children.push(
+                React.createElement(Lock)
+              );
+              return res;
+            }
+          } catch {
             return res;
           }
-        } catch {
           return res;
         }
-        return res;
-      }
-    );
+      );
+    }
   }
 
   injectToolbar() {
@@ -189,14 +188,11 @@ module.exports = class InviChat extends Plugin {
       const msg = findInReactTree(res, (r) => r && r.message)?.message;
       if (!msg) return res;
 
-      const msgcontent =
-        msg.content.includes("\u200d") || msg.content.includes("\u2061");
-
-      if (msgcontent) {
+      if (msg.content.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)) {
         res.props.children.unshift(
           React.createElement("div",
           {
-            onClick: () => openModal(() => React.createElement(ModalComposerDecrypt, {
+            onClick: async () => openModal(() => React.createElement(ModalComposerDecrypt, {
               author: msg.author.id,
               content: msg.content
             }))

@@ -1,83 +1,67 @@
-const isImageUrl = require("is-image-url");
-const { getModule, channels } = require("powercord/webpack");
-
-const { createBotMessage } = getModule(["createBotMessage"], false);
+const { getModule, FluxDispatcher } = require('powercord/webpack');
+const { getMessage } = getModule(['getMessages'], false)
 const { receiveMessage } = getModule(["receiveMessage"], false);
 
-// Image width + Height
-exports.imageWH = async (url) => {
-  let res;
-  if (isImageUrl(url)) {
-    await new Promise((resolve) => {
-      let img = new Image();
-      img.src = url;
-      img.onload = function () {
-        res = { width: this.width, height: this.height };
-        resolve();
-      };
-    });
-    return res;
+exports.doEmbed = async (messageId, ChannelId, content, url) => {
+  const message = getMessage(ChannelId, messageId)
+  let wh;
+  if (url) wh = await this.getImageResolutionByUrl(this.isImage(url));
+  let image = {}
+  url ? image = { url: this.isImage(url), width: wh.width, height: wh.height } : image = {}
+  let embed = {
+    type: "rich",
+    title: "Decrypted Message",
+    color: "0x45f5f5",
+    description: content,
+    image: image,
+    footer: {
+      text: "Made with ❤️ by c0dine and Sammy!",
+    },
+  };
+  message.embeds.push(embed)
+  this.updateMessage(message)
+  embed = {
+    type: "rich",
+    title: "Decrypted Message",
+    color: "0x45f5f5",
+    description: '',
+    image: {},
+    footer: {
+      text: "Made with ❤️ by c0dine and Sammy!",
+    },
+  }
+}
+
+exports.updateMessage = (message) => {
+  FluxDispatcher.dirtyDispatch({
+    type: 'MESSAGE_UPDATE',
+    message
+  })
+}
+
+
+exports.isImage = (url) => {
+  if (url && url.match(/\.(jpeg|jpg|gif|png)$/)) {
+    if (url.includes('cdn.discordapp.com') || url.includes('media.discordapp.net')) {
+      return url
+    }
+    return `https://images.weserv.nl/?url=${url}`;
   }
   return false;
-};
+}
 
-// I'll Put this Here to make Index.js it more clean
-
-/******************BASE EMBED******************/
-////////////////////////////////////////////////
-let embed = {
-  type: "rich",
-  color: "0x45f5f5",
-  footer: {
-    text: "Made with ❤️ by c0dine and Sammy!",
-  },
-};
-////////////////////////////////////////////////
-
-// Send Botmessage to current Channel
-exports.sendBotMessage = (content) => {
-  const received = createBotMessage(channels.getChannelId(), "");
-  received.embeds.push(content);
-  return receiveMessage(received.channel_id, received);
-};
-
-// If Base Embed Should be Used
-exports.reply = (title, content, footer) => {
-  this.sendBotMessage(
-    Object.assign(
-      {
-        title: title,
-        description: content,
-        footer: {
-          text: "Made with ❤️ by c0dine and Sammy!",
-        },
-      },
-      embed
-    )
-  );
-};
-
-// Handle Errors
-exports.replyError = (content) => {
-  this.sendBotMessage(
-    Object.assign(embed, {
-      title: "There has Been an Error",
-      description: content,
-    })
-  );
-};
-
-// Map User Passwords
-exports.getUserPasswordById = (id) => {
-  const userPws = powercord.pluginManager
-    .get("invisible-chat")
-    .settings.get("userPasswords");
-  try {
-    const user = userPws.find((user) => user.id === id);
-    if (!user) return false;
-    return (res = {
-      username: user.name,
-      password: user.password,
-    });
-  } catch (err) {}
-};
+exports.getImageResolutionByUrl = async (url) => {
+  return new Promise((resolve, reject) => {
+    let img = new Image();
+    img.onload = () => {
+      resolve({
+        width: img.naturalWidth,
+        height: img.naturalHeight
+      });
+    };
+    img.onerror = () => {
+      reject();
+    };
+    img.src = url;
+  });
+}

@@ -39,7 +39,7 @@ class ModalComposerDecrypt extends React.Component {
   }
 
   render() {
-    const SettingStore = powercord.pluginManager.get(pluginName).settings.get('userPasswords', '[]');
+    const SettingStore = powercord.pluginManager.get(pluginName).settings.get('userPasswords', []);
     let user;
 
 
@@ -173,7 +173,7 @@ class ModalComposerEncrypt extends React.Component {
   }
 
   render() {
-    const SettingStore = powercord.pluginManager.get(pluginName).settings.get('userPasswords', '[]');
+    const SettingStore = powercord.pluginManager.get(pluginName).settings.get('userPasswords', []);
     let user;
 
     return(

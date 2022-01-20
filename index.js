@@ -1,3 +1,25 @@
+const { join } = require("path");
+const { existsSync } = require("fs");
+const { execSync } = require("child_process");
+const nodeModulesPath = join(__dirname,"node_modules");
+
+function installDeps () {
+  console.log("Installing dependencies, please wait...");
+  execSync("npm install --only=prod", {
+    cwd: __dirname,
+    stdio: [ null, null, null ]
+  });
+  console.log("Dependencies successfully installed!");
+  setTimeout(() => {
+    powercord.pluginManager.remount(__dirname);
+  }, 2000);
+}
+
+if (!existsSync(nodeModulesPath)) {
+  installDeps();
+  return;
+}
+
 const { Plugin } = require('powercord/entities');
 const { open: openModal } = require('powercord/modal');
 const { inject, uninject } = require('powercord/injector');

@@ -1,113 +1,32 @@
-const { join } = require("path");
-const { existsSync } = require("fs");
-const { execSync } = require("child_process");
-const nodeModulesPath = join(__dirname,"node_modules");
+const { Plugin } = require('powercord/entities');
+const { open: openModal } = require('powercord/modal');
+const { inject, uninject } = require('powercord/injector');
+const { getModule, React, messages } = require('powercord/webpack');
+const { findInReactTree, forceUpdateElement } = require('powercord/util');
 
-function installDeps () {
-  console.log("Installing dependencies, please wait...");
-  execSync("npm install --only=prod", {
-    cwd: __dirname,
-    stdio: [ null, null, null ]
-  });
-  console.log("Dependencies successfully installed!");
-  setTimeout(() => {
-    powercord.pluginManager.remount(__dirname);
-  }, 2000);
-}
+const Steggo   = require('stegcloak');
+const Settings = require("./Settings/Settings");
+const Button   = require('./assets/Icons/Button');
+const LockIcon = require('./assets/Icons/LockIcon');
+const { Lock } = require('./assets/Icons/MessageIcon');
+const { ModalComposerEncrypt, ModalComposerDecrypt } = require('./components/ModalComposer');
 
-if (!existsSync(nodeModulesPath)) {
-  installDeps();
-  return;
-}
 
-// Plugin Start
+let isActive;
 
-const { Plugin } = require("powercord/entities");
-const { getModule,React,constants: { Permissions: { SEND_MESSAGES } } } = require("powercord/webpack");
-const { inject, uninject } = require("powercord/injector");
-const { open: openModal } = require("powercord/modal");
-const { findInReactTree } = require("powercord/util");
-
-const { handler }   = require("./commands/invichat");
-const chatembed     = require("./commands/chatembed");
-const Functions     = require("./components/Functions");
-const Button        = require("./components/icons/Button");
-const LockIcon      = require("./components/icons/LockIcon");
-const Settings      = require("./components/Settings/Settings");
-const { Lock }      = require("./components/icons/MessageIcon");
-const ModalComposerEncrypt = require("./components/ModalComposerEncrypt");
-const ModalComposerDecrypt = require("./components/ModalComposerDecrypt");
-
+const { ComponentDispatch } = getModule(["ComponentDispatch"], false)
 const MiniPopover = getModule(
   (m) => m.default?.displayName === "MiniPopover",
   false
 );
 
-/*
-* Any boxed out parts of the program are final unless needed to be changed on occurence of a bug
-*/
-module.exports = class InviChat extends Plugin {
-  /*********** Colors ***********/
-  ////////////////////////////////
-  get hexiColor() {
-    return "0x45f5f5";
-  }
-  get color() {
-    return "#45f5f5";
-  }
-  get errorColor() {
-    return "0xf54242";
-  }
-  get debugColor() {
-    return "0xf56942";
-  }
-  get successColor() {
-    return this.color();
-  }
-  ////////////////////////////////
+module.exports = class InvisbleChatRewrite extends Plugin {
+  async startPlugin() {
+    this.__injectChatBarIcon();
+    this.__injectSendingMessages();
+    this.__injectMessages();
+    this.__injectMinipopover();
 
-  /******************** Smart Webpack Module Imports ********************/
-  ////////////////////////////////////////////////////////////////////////
-  async import(filter, functionName = filter) {
-    if (typeof filter === "string") {
-      filter = [filter];
-    }
-    this[functionName] = (await getModule(filter))[functionName];
-  }
-  async prepareClass() {
-    await this.import(["getLastSelectedChannelId"], "getChannelId");
-    await this.import("getChannel");
-    await this.import("getCurrentUser");
-    await this.import(["can", "canEveryone"], "can");
-    await this.import("getChannelPermissions");
-  }
-  ////////////////////////////////////////////////////////////////////////
-
-  register() {
-    // Register main command
-    powercord.api.commands.registerCommand({
-      command: "invichat",
-      description: "Send an invisible message",
-      usage:
-        "{c} < -m [hidden message] -c [camo message] -p [password] || -s [encryted message] -p [password]>",
-      executor: (args) => {
-        const Data = handler(args, this);
-        const UrlRegex = new RegExp(
-          /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/,
-          "ig"
-        );
-        const MatchedUrl = Data.match(UrlRegex);
-
-        if (!args.includes("-c")) {
-          if (MatchedUrl) {
-            return chatembed.executor(Data, MatchedUrl.toString()+"?"+(new Date().getTime()))
-          }
-          return Functions.reply("Your Decrypted Message", Data);
-        }
-        return Functions.reply("Your Encrypted Message", Data);
-      },
-    });
-    // Settings
     powercord.api.settings.registerSettings("invichat", {
       label: "Invisible Chat",
       category: this.entityID,
@@ -115,109 +34,121 @@ module.exports = class InviChat extends Plugin {
     });
   }
 
-  injectIcon() {
+  async __injectChatBarIcon() {
     const ChannelTextAreaContainer = getModule(
       (m) =>
         m.type &&
-        m.type.render &&
-        m.type.render.displayName === "ChannelTextAreaContainer",
+        m.type.render?.displayName === 'ChannelTextAreaContainer',
       false
-    );
+    )
 
     inject(
-      "invichat-button",
+      'invisible-chatbutton',
       ChannelTextAreaContainer.type,
-      "render",
-      (args, res) => {
+      'render',
+      (_, res) => {
         const props = findInReactTree(
           res,
-          (r) => r && r.className && r.className.indexOf("buttons-") == 0
-        );
-        const el = React.createElement(
-          "div",
-          {
-            className: ".send-invisible-message",
-            onClick: () => openModal(ModalComposerEncrypt)
-          },
-          React.createElement(Button)
-        );
-        props.children.unshift(el);
-        return res;
+          (n) => n && n.className && n.className.indexOf('buttons-') === 0
+        )
+        const button = React.createElement('div', {
+            className: 'send-invisible-message',
+            onClick: () => {
+              this.settings.get("inlineEnabled", 'false') ? isActive = !isActive : openModal(ModalComposerEncrypt);
+            }
+          }, React.createElement(Button, { isActive, isEnabled: this.settings.get("inlineEnabled", 'false') })
+        )
+        props.children.unshift(button)
       }
-    );
-    ChannelTextAreaContainer.type.render.displayName =
-      "ChannelTextAreaContainer";
+    )
   }
 
-  async injectIconMessages() {
+  async __injectMinipopover() {
+    inject('invichat-minipopover', MiniPopover, 'default', (_, res) => {
+      const msg = findInReactTree(res, (n) => n && n.message)?.message;
+      if (!msg) return res;
+
+      if (msg.content.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)) {
+        res.props.children.unshift(
+          React.createElement('div', {
+            onClick: () => openModal(() => React.createElement(ModalComposerDecrypt, {
+              author: msg.author.id,
+              content: msg.content,
+              channel: msg.channel_id,
+              message: msg.id,
+            }))
+          },
+          [React.createElement(LockIcon)])
+        )
+      }
+      return res;
+    })
+    MiniPopover.default.displayName = 'MiniPopover';
+  }
+
+  async __injectMessages() {
     const d = (m) => {
       const def = m.__powercordOriginal_default ?? m.default;
-      return typeof def === "function" ? def : null;
+      return typeof def == 'function' ? def : null;
     };
-    const MessageHeader = await getModule((m) =>
-      d(m)?.toString().includes("MessageContent")
-    );
+    const MessageContent = await getModule((m) => {
+      return d(m)?.toString().includes('MessageContent');
+    });
 
-    if (MessageHeader) {
+    if (MessageContent) {
       inject(
-        "invichat-message-indicator",
-        MessageHeader,
-        "default",
-        function ([props], res) {
-          var v = findInReactTree(res, (r) => r && r.message)?.message.content;
-          try {
-            if (
-              v.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)
-            ) {
+        'invisible-messageContent',
+        MessageContent,
+        'default',
+        ([props], res) => {
+          const v = findInReactTree(res, (n) => n && n.message)?.message.content;
+            if (v && v.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)) {
               res.props.children.props.children[2].props.children.push(
                 React.createElement(Lock)
               );
-              return res;
             }
-          } catch {
             return res;
-          }
-          return res;
         }
       );
     }
   }
 
-  injectToolbar() {
-    inject("invichat-indicator", MiniPopover, "default", (_, res) => {
-      const msg = findInReactTree(res, (r) => r && r.message)?.message;
-      if (!msg) return res;
-
-      if (msg.content.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)) {
-        res.props.children.unshift(
-          React.createElement("div",
-          {
-            onClick: async () => openModal(() => React.createElement(ModalComposerDecrypt, {
-              author: msg.author.id,
-              content: msg.content
-            }))
-          }, 
-          [React.createElement(LockIcon)])
-        )
+  async __injectSendingMessages() {
+    inject('invisible-catchMessage', messages, 'sendMessage', (args, res) => {
+      if (isActive) {
+        let content = args[1].content;
+        let matchHidden = content.match(/\#\!.{0,2000}\!\#/) || false
+        let matchPwd = content.match(/\#\?.{0,2000}\?\#/) || false
+        if (matchHidden && matchPwd) {
+          let coverMessage = content.match(/(.{0,2000}) \#\!/)[1] || false
+          matchPwd[0] = matchPwd[0].slice(2, -2)
+          matchHidden[0] = matchHidden[0].slice(2, -2)
+          args[1].content = this.__handleEncryption(coverMessage, matchHidden[0], matchPwd[0]);
+        }
+        else {
+          ComponentDispatch.dispatch('SHAKE_APP', {
+            duration: 500,
+            intensity: 2
+          });
+          return false;
+        }
       }
-      return res;
-    });
-    MiniPopover.default.displayName = "MiniPopover";
+      return args;
+    }, true)
   }
 
-  async startPlugin() {
-    await this.prepareClass()
-    this.register();
-    this.injectIcon();
-    this.injectToolbar();
-    this.injectIconMessages();
+  __handleEncryption(coverMessage, inviMessage, password) {
+    const steggo = new Steggo(true, false);
+    let encrypted = steggo.hide(inviMessage, password, coverMessage);
+    return encrypted;
   }
 
-  async pluginWillUnload() {
-    uninject("invichat-button");
-    uninject("invichat-indicator");
-    uninject("invichat-message-indicator");
-    powercord.api.commands.unregisterCommand("invichat");
+
+  pluginWillUnload() {
+    uninject('invisible-chatbutton');
+    uninject('invisible-catchMessage');
+    uninject('invisible-messageContent');
+    uninject('invichat-minipopover');
     powercord.api.settings.unregisterSettings("invichat");
   }
-};
+}

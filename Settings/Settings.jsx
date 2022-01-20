@@ -89,6 +89,15 @@ module.exports = class Settings extends React.Component {
     return (
       <div>
         <div>
+          <SwitchItem
+            onChange={(val) => {
+              updateSetting("inlineEnabled", val);
+            }}
+            value={getSetting("inlineEnabled")}
+            note='Click LockIcon in Chatbar. Send a message in this Format: Message to Cover #!Hidden Message!# #?Password?#'
+            >
+            Use Inline Encryption (Experimental)
+          </SwitchItem>
           <FormTitle style={{ color: "lightgrey", "margin-top": "10px" }}>Add Users to Quickly Encrypt and Decrypt their Messages</FormTitle>
           <Category
             name="Users"

@@ -11,8 +11,9 @@ const buttonClasses = getModule(["button"], false);
 const buttonWrapperClasses = getModule(["buttonWrapper", "pulseButton"], false);
 const buttonTextAreaClasses = getModule(["button", "textArea"], false);
 
-module.exports = () => (
-    <Tooltip color="black" postion="top" text="Send a secret message">
+module.exports = ({ isActive, isEnabled }) => (
+    <Tooltip color="black" postion="top"
+      text={isEnabled ? (isActive ? 'Usage: CoverMessage #!Invisible Message!# #?Password?#' : 'Click to Toggle Encryption') : 'Create Hidden Message'}>
         {({ onMouseLeave, onMouseEnter }) => (
             <Button
                 style={{ marginTop: 1 }}
@@ -23,6 +24,7 @@ module.exports = () => (
             >
                 <Icon
                     name="LockClosed"
+                    style={isActive ? { color: "gold" } : { color: "white"}}
                     className={`${buttonClasses.contents} ${buttonWrapperClasses.button} ${buttonTextAreaClasses.button}`}
                 />
             </Button>

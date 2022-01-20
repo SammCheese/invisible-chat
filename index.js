@@ -80,9 +80,12 @@ module.exports = class InvisbleChatRewrite extends Plugin {
             }
           }, React.createElement(Button, { isActive, isEnabled: this.settings.get("inlineEnabled", 'false') })
         )
-        props.children.unshift(button)
+        props.children.unshift(button);
+        return res;
       }
     )
+    ChannelTextAreaContainer.type.render.displayName =
+    "ChannelTextAreaContainer";
   }
 
   async __injectMinipopover() {

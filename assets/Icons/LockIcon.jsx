@@ -16,7 +16,7 @@ module.exports = ({ msgcontent, msgpassword }) => (
   <Tooltip
     color="black"
     postion="top"
-    text="This Message has Invisible Characters"
+    text="Decrypt Hidden Message"
   >
     {({ onMouseLeave, onMouseEnter }) => (
       <Button

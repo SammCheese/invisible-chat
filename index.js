@@ -20,6 +20,8 @@ if (!existsSync(nodeModulesPath)) {
   return;
 }
 
+// Plugin Start
+
 const { Plugin } = require('powercord/entities');
 const { open: openModal } = require('powercord/modal');
 const { inject, uninject } = require('powercord/injector');
@@ -29,6 +31,7 @@ const { findInReactTree, forceUpdateElement } = require('powercord/util');
 const Steggo   = require('stegcloak');
 const Settings = require("./Settings/Settings");
 const Button   = require('./assets/Icons/Button');
+const f        = require('./components/Functions');
 const LockIcon = require('./assets/Icons/LockIcon');
 const { Lock } = require('./assets/Icons/MessageIcon');
 const { ModalComposerEncrypt, ModalComposerDecrypt } = require('./components/ModalComposer');
@@ -46,8 +49,8 @@ module.exports = class InvisbleChatRewrite extends Plugin {
   async startPlugin() {
     this.__injectChatBarIcon();
     this.__injectSendingMessages();
-    this.__injectMessages();
-    this.__injectMinipopover();
+    this.__injectIndicator();
+    this.__injectDecryptButton();
 
     powercord.api.settings.registerSettings("invichat", {
       label: "Invisible Chat",
@@ -88,7 +91,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
     "ChannelTextAreaContainer";
   }
 
-  async __injectMinipopover() {
+  async __injectDecryptButton() {
     inject('invichat-minipopover', MiniPopover, 'default', (_, res) => {
       const msg = findInReactTree(res, (n) => n && n.message)?.message;
       if (!msg) return res;
@@ -96,12 +99,14 @@ module.exports = class InvisbleChatRewrite extends Plugin {
       if (msg.content.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)) {
         res.props.children.unshift(
           React.createElement('div', {
-            onClick: () => openModal(() => React.createElement(ModalComposerDecrypt, {
-              author: msg.author.id,
-              content: msg.content,
-              channel: msg.channel_id,
-              message: msg.id,
-            }))
+            onClick: () => {
+              f.iteratePasswords(this.settings.get("userPasswords", []), ModalComposerDecrypt, {
+                author: msg.author.id,
+                content: msg.content,
+                channel: msg.channel_id,
+                message: msg.id
+              })
+            }
           },
           [React.createElement(LockIcon)])
         )
@@ -111,7 +116,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
     MiniPopover.default.displayName = 'MiniPopover';
   }
 
-  async __injectMessages() {
+  async __injectIndicator() {
     const d = (m) => {
       const def = m.__powercordOriginal_default ?? m.default;
       return typeof def == 'function' ? def : null;
@@ -164,7 +169,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
 
   __handleEncryption(coverMessage, inviMessage, password) {
     const steggo = new Steggo(true, false);
-    let encrypted = steggo.hide(inviMessage, password, coverMessage);
+    let encrypted = steggo.hide(inviMessage + ' ­­­', password, coverMessage);
     return encrypted;
   }
 

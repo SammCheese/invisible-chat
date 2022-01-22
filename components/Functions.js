@@ -9,9 +9,9 @@ const { receiveMessage } = getModule(["receiveMessage"], false);
 exports.doEmbed = async (messageId, ChannelId, content, url) => {
   const message = getMessage(ChannelId, messageId)
   let wh;
-  if (url) wh = await this.getImageResolutionByUrl(this.isImage(url));
+  if (url && this.isImage(url)) wh = await this.getImageResolutionByUrl(this.isImage(url));
   let image = {}
-  url ? image = { url: this.isImage(url), width: wh.width, height: wh.height } : image = {}
+  url && this.isImage(url) ? image = { url: this.isImage(url), width: wh.width, height: wh.height } : image = {}
   let embed = {
     type: "rich",
     title: "Decrypted Message",
@@ -35,7 +35,7 @@ exports.updateMessage = (message) => {
 
 
 exports.isImage = (url) => {
-  if (url && url.match(/\.(jpeg|jpg|gif|png)$/)) {
+  if (url && url.match(/\.(jpeg|jpg|gif|png|webp)$/)) {
     if (url.includes('cdn.discordapp.com') || url.includes('media.discordapp.net')) {
       return url
     }

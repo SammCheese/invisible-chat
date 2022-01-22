@@ -150,16 +150,23 @@ module.exports = class InvisbleChatRewrite extends Plugin {
         let matchHidden = content.match(/\#\!.{0,2000}\!\#/) || false
         let matchPwd = content.match(/\#\?.{0,2000}\?\#/) || false
         if (matchHidden && matchPwd) {
-          let coverMessage = content.match(/(.{0,2000}) \#\!/)[1] || false
-          matchPwd[0] = matchPwd[0].slice(2, -2)
-          matchHidden[0] = matchHidden[0].slice(2, -2)
-          args[1].content = this.__handleEncryption(coverMessage, matchHidden[0], matchPwd[0]);
+          try {
+            let coverMessage = content.match(/(.{0,2000} .{0,2000}) \#\!/)[1] || false
+            if (coverMessage) {
+              matchPwd[0] = matchPwd[0].slice(2, -2)
+              matchHidden[0] = matchHidden[0].slice(2, -2)
+              args[1].content = this.__handleEncryption(coverMessage, matchHidden[0], matchPwd[0]);
+            } else {
+              this.__shakeApp();
+              return false;
+            }
+          } catch (e) {
+            this.__shakeApp();
+            return false;
+          }
         }
         else {
-          ComponentDispatch.dispatch('SHAKE_APP', {
-            duration: 500,
-            intensity: 2
-          });
+          this.__shakeApp();
           return false;
         }
       }
@@ -171,6 +178,14 @@ module.exports = class InvisbleChatRewrite extends Plugin {
     const steggo = new Steggo(true, false);
     let encrypted = steggo.hide(inviMessage + ' ­­­', password, coverMessage);
     return encrypted;
+  }
+
+  __shakeApp() {
+    ComponentDispatch.dispatch('SHAKE_APP', {
+      duration: 500,
+      intensity: 2
+    });
+    return;
   }
 
 

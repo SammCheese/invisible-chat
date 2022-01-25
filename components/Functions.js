@@ -7,7 +7,7 @@ const { getMessage } = getModule(['getMessages'], false)
 const { receiveMessage } = getModule(["receiveMessage"], false);
 
 exports.doEmbed = async (messageId, ChannelId, content, url) => {
-  const message = getMessage(ChannelId, messageId)
+  const message = getMessage(ChannelId, messageId);
   let wh;
   if (url && this.isImage(url)) wh = await this.getImageResolutionByUrl(this.isImage(url));
   let image = {}
@@ -33,6 +33,15 @@ exports.updateMessage = (message) => {
   })
 }
 
+exports.removeEmbed = (messageId, ChannelId) => {
+  const message = getMessage(ChannelId, messageId);
+  for (var embed in message.embeds) {
+    if (message.embeds[embed].footer.text === "Made with ❤️ by c0dine and Sammy!") {
+      message.embeds.splice(embed, 1);
+    }
+  }
+  this.updateMessage(message);
+}
 
 exports.isImage = (url) => {
   if (url && url.match(/\.(jpeg|jpg|gif|png|webp)$/)) {

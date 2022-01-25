@@ -34,6 +34,7 @@ const Button   = require('./assets/Icons/Button');
 const f        = require('./components/Functions');
 const LockIcon = require('./assets/Icons/LockIcon');
 const { Lock } = require('./assets/Icons/MessageIcon');
+const CloseButton = require("./assets/Icons/CloseButton");
 const { ModalComposerEncrypt, ModalComposerDecrypt } = require('./components/ModalComposer');
 
 
@@ -79,9 +80,9 @@ module.exports = class InvisbleChatRewrite extends Plugin {
         const button = React.createElement('div', {
             className: 'send-invisible-message',
             onClick: () => {
-              this.settings.get("inlineEnabled", 'false') ? isActive = !isActive : openModal(ModalComposerEncrypt);
+              this.settings.get("inlineEnabled", false) ? isActive = !isActive : openModal(ModalComposerEncrypt);
             }
-          }, React.createElement(Button, { isActive, isEnabled: this.settings.get("inlineEnabled", 'false') })
+          }, React.createElement(Button, { isActive, isEnabled: this.settings.get("inlineEnabled", false) })
         )
         props.children.unshift(button);
         return res;
@@ -131,11 +132,19 @@ module.exports = class InvisbleChatRewrite extends Plugin {
         MessageContent,
         'default',
         ([props], res) => {
-          const v = findInReactTree(res, (n) => n && n.message)?.message.content;
-            if (v && v.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)) {
+          const v = findInReactTree(res, (n) => n && n.message)?.message;
+            if (v && v.content && v.content.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)) {
               res.props.children.props.children[2].props.children.push(
                 React.createElement(Lock)
               );
+            }
+            if (v && v.embeds.find(e => e.footer && e.footer.text.includes("Made with ❤️ by c0dine and Sammy"))) {
+              res.props.children.props.children[2].props.children.push(
+                React.createElement('span', {
+                }, React.createElement(CloseButton, {
+                  message: v
+                }))
+              )
             }
             return res;
         }

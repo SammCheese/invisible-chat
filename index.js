@@ -26,7 +26,7 @@ const { Plugin } = require('powercord/entities');
 const { open: openModal } = require('powercord/modal');
 const { inject, uninject } = require('powercord/injector');
 const { getModule, React, messages } = require('powercord/webpack');
-const { findInReactTree, forceUpdateElement } = require('powercord/util');
+const { findInReactTree } = require('powercord/util');
 
 const Steggo   = require('stegcloak');
 const Settings = require("./Settings/Settings");
@@ -41,13 +41,21 @@ const { ModalComposerEncrypt, ModalComposerDecrypt } = require('./components/Mod
 let isActive;
 
 const { ComponentDispatch } = getModule(["ComponentDispatch"], false)
-const MiniPopover = getModule(
-  (m) => m.default?.displayName === "MiniPopover",
-  false
-);
+let MiniPopover;
+let ChannelTextAreaContainer;
 
 module.exports = class InvisbleChatRewrite extends Plugin {
   async startPlugin() {
+    MiniPopover = await getModule(
+      (m) => m.default?.displayName === "MiniPopover",
+      true
+    );
+    ChannelTextAreaContainer = await getModule(
+      (m) =>
+        m.type &&
+        m.type.render?.displayName === 'ChannelTextAreaContainer',
+      true
+    )
     this.__injectChatBarIcon();
     this.__injectSendingMessages();
     this.__injectIndicator();
@@ -61,13 +69,6 @@ module.exports = class InvisbleChatRewrite extends Plugin {
   }
 
   async __injectChatBarIcon() {
-    const ChannelTextAreaContainer = getModule(
-      (m) =>
-        m.type &&
-        m.type.render?.displayName === 'ChannelTextAreaContainer',
-      false
-    )
-
     inject(
       'invisible-chatbutton',
       ChannelTextAreaContainer.type,
@@ -75,7 +76,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
       (_, res) => {
         const props = findInReactTree(
           res,
-          (n) => n && n.className && n.className.indexOf('buttons-') === 0
+          (n) => n && n.className
         )
         const button = React.createElement('div', {
             className: 'send-invisible-message',
@@ -84,7 +85,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
             }
           }, React.createElement(Button, { isActive, isEnabled: this.settings.get("inlineEnabled", false) })
         )
-        props.children.unshift(button);
+        props.children[1].props.children[2].props.children.push(button);
         return res;
       }
     )

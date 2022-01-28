@@ -41,21 +41,18 @@ const { ModalComposerEncrypt, ModalComposerDecrypt } = require('./components/Mod
 let isActive;
 
 const { ComponentDispatch } = getModule(["ComponentDispatch"], false)
-let MiniPopover;
-let ChannelTextAreaContainer;
+let MiniPopover = getModule(
+  (m) => m.default?.displayName === "MiniPopover",
+  false
+)
+
+let ChannelTextAreaButtons = getModule(
+  (m) => m.type && m.type.displayName === 'ChannelTextAreaButtons',
+  false
+);
 
 module.exports = class InvisbleChatRewrite extends Plugin {
   async startPlugin() {
-    MiniPopover = await getModule(
-      (m) => m.default?.displayName === "MiniPopover",
-      true
-    );
-    ChannelTextAreaContainer = await getModule(
-      (m) =>
-        m.type &&
-        m.type.render?.displayName === 'ChannelTextAreaContainer',
-      true
-    )
     this.__injectChatBarIcon();
     this.__injectSendingMessages();
     this.__injectIndicator();
@@ -71,26 +68,23 @@ module.exports = class InvisbleChatRewrite extends Plugin {
   async __injectChatBarIcon() {
     inject(
       'invisible-chatbutton',
-      ChannelTextAreaContainer.type,
-      'render',
-      (_, res) => {
-        const props = findInReactTree(
-          res,
-          (n) => n && n.className
-        )
+      ChannelTextAreaButtons,
+      'type',
+      (args, res) => {
         const button = React.createElement('div', {
-            className: 'send-invisible-message',
-            onClick: () => {
-              this.settings.get("inlineEnabled", false) ? isActive = !isActive : openModal(ModalComposerEncrypt);
-            }
-          }, React.createElement(Button, { isActive, isEnabled: this.settings.get("inlineEnabled", false) })
-        )
-        props.children[1].props.children[2].props.children.push(button);
+          className: 'send-invisible-message',
+          onClick: () => {
+            this.settings.get("inlineEnabled", false) ? isActive = !isActive : openModal(ModalComposerEncrypt);
+          }
+        }, React.createElement(Button, { isActive, isEnabled: this.settings.get("inlineEnabled", false) }))
+        try {
+          res.props.children.unshift(button);
+        } catch {}
         return res;
       }
     )
-    ChannelTextAreaContainer.type.render.displayName =
-    "ChannelTextAreaContainer";
+    ChannelTextAreaButtons.type.displayName =
+    "ChannelTextAreaButtons";
   }
 
   async __injectDecryptButton() {

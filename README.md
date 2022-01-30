@@ -19,18 +19,13 @@ git clone https://github.com/SammCheese/invisible-chat
 
 ## How I work
 
-### Command `invichat`
+### Inline Encryption
 
-*Usage* (Encryption)
+Tap the Lock Icon in the Chatbar, it should turn Yellow. When its Yellow, Inline Encryption is Enabled.
+Usage:
 
 ```txt
-.invichat -m [hidden message] -c [camo message] -p [password]
-```
-
-*Usage* (Decryption)
-
-```txtt
-.invichat -s [encrypted message] -p [password]
+This is the Cover Message #!The Message you want to Hide!# #?password?#
 ```
 
 ### GUI Explanation

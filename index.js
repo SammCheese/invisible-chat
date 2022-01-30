@@ -92,7 +92,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
       const msg = findInReactTree(res, (n) => n && n.message)?.message;
       if (!msg) return res;
 
-      if (msg.content.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)) {
+      if (msg.content.match(/( \u200c|\u200d|[\u2060-\u2064])[^\u200b]/)) {
         res.props.children.unshift(
           React.createElement('div', {
             onClick: () => {
@@ -127,8 +127,8 @@ module.exports = class InvisbleChatRewrite extends Plugin {
         MessageContent,
         'default',
         ([props], res) => {
-          const v = findInReactTree(res, (n) => n && n.message)?.message;
-            if (v && v.content && v.content.match(/(\u200c|\u200d|[\u2060-\u2064])\w{1}/)) {
+          const v = findInReactTree(res, (n) => n && n.message)?.message; // \u200b is used by another Aliucord plugin causing false positives, so we exclude it
+            if (v && v.content && v.content.match(/( \u200c|\u200d|[\u2060-\u2064])[^\u200b]/)) {
               res.props.children.props.children[2].props.children.push(
                 React.createElement(Lock)
               );
@@ -180,8 +180,8 @@ module.exports = class InvisbleChatRewrite extends Plugin {
 
   __handleEncryption(coverMessage, inviMessage, password) {
     const steggo = new Steggo(true, false);
-    let encrypted = steggo.hide(inviMessage + ' ­­­', password, coverMessage);
-    return encrypted;
+    let encrypted = steggo.hide(inviMessage + ' ‍​', password, coverMessage); // \u200d to make sure the chance of wrong but as correct detected decryptions is low
+    return encrypted;                                                       // \u200b for detection of invisible messages, Apate and ALiucord Plugins use this
   }
 
   __shakeApp() {

@@ -4,13 +4,13 @@ const StegCloak = require('stegcloak');
 
 
 const { getMessage } = getModule(['getMessages'], false)
-const { receiveMessage } = getModule(["receiveMessage"], false);
 
 exports.doEmbed = async (messageId, ChannelId, content, url) => {
   const message = getMessage(ChannelId, messageId);
   let wh;
   if (url && this.isImage(url)) wh = await this.getImageResolutionByUrl(this.isImage(url));
   let image = {}
+  content = content.replace(' ‍​', '');
   url && this.isImage(url) ? image = { url: this.isImage(url), width: wh.width, height: wh.height } : image = {}
   let embed = {
     type: "rich",
@@ -79,6 +79,7 @@ exports.iteratePasswords = (passwords, ModalComposer, messageData) => {
     processed++;
     if (this.isCorrectPassword(result) && !found) {
       found = true;
+      result = result.replace(' ‍​', '');
       let url = result.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/) || [];
       return this.doEmbed(messageData.message, messageData.channel, result, url[0]);
     }
@@ -91,5 +92,5 @@ exports.iteratePasswords = (passwords, ModalComposer, messageData) => {
 }
 
 exports.isCorrectPassword = (result) => {
-  return result.endsWith(' ­­­');
+  return result.endsWith(' ‍​');
 }

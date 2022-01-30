@@ -1,23 +1,15 @@
 const path = require("path");
 const { clipboard } = require("electron");
 
-const { React, getModule, messages, channels } = require("powercord/webpack");
+const { React, messages, channels } = require("powercord/webpack");
 const { Modal } = require("powercord/components/modal");
 const { close: closeModal } = require("powercord/modal");
 const { FormTitle, Button } = require("powercord/components");
-const { TextAreaInput, SelectInput, SwitchItem, Category } = require("powercord/components/settings");
+const { TextAreaInput, SelectInput } = require("powercord/components/settings");
 
 const Steggo = require("stegcloak");
 
 const { doEmbed } = require("./functions");
-
-const ChannelTextAreaContainer = getModule(
-  (m) =>
-    m.type &&
-    m.type.render &&
-    m.type.render.displayName === "ChannelTextAreaContainer",
-  false
-);
 
 const pluginName = path.basename(path.resolve(__dirname, '..'));
 let loading;
@@ -262,7 +254,7 @@ class ModalComposerEncrypt extends React.Component {
               try {
                 const steggo = new Steggo(true, false);
                 clipboard.writeText(`${steggo.hide(
-                  this.state.secret + ' ­­­',
+                  this.state.secret + ' ‍​', // Space \u200d \u200b
                   this.state.password,
                   this.state.cover
                 )}`);

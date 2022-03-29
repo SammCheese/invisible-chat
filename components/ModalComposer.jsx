@@ -9,7 +9,7 @@ const { TextAreaInput, SelectInput } = require("powercord/components/settings");
 
 const Steggo = require("stegcloak");
 
-const { doEmbed } = require("./functions");
+const { doEmbed } = require("./Functions");
 
 const pluginName = path.basename(path.resolve(__dirname, '..'));
 let loading;

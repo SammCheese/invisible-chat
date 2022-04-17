@@ -37,9 +37,6 @@ const { Lock } = require('./assets/Icons/MessageIcon');
 const CloseButton = require("./assets/Icons/CloseButton");
 const { ModalComposerEncrypt, ModalComposerDecrypt } = require('./components/ModalComposer');
 
-
-let isActive;
-
 const { ComponentDispatch } = getModule(["ComponentDispatch"], false)
 let MiniPopover = getModule(
   (m) => m.default?.displayName === "MiniPopover",
@@ -74,9 +71,9 @@ module.exports = class InvisbleChatRewrite extends Plugin {
         const button = React.createElement('div', {
           className: 'send-invisible-message',
           onClick: () => {
-            this.settings.get("inlineEnabled", false) ? isActive = !isActive : openModal(ModalComposerEncrypt);
+            openModal(ModalComposerEncrypt);
           }
-        }, React.createElement(Button, { isActive, isEnabled: this.settings.get("inlineEnabled", false) }))
+        }, React.createElement(Button))
         try {
           res.props.children.unshift(button);
         } catch {}
@@ -91,8 +88,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
     inject('invichat-minipopover', MiniPopover, 'default', (_, res) => {
       const msg = findInReactTree(res, (n) => n && n.message)?.message;
       if (!msg) return res;
-
-      if (msg.content.match(/( \u200c|\u200d|[\u2060-\u2064])[^\u200b]/)) {
+      if (msg.content.match(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/)) {
         res.props.children.unshift(
           React.createElement('div', {
             onClick: () => {
@@ -128,7 +124,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
         'default',
         ([props], res) => {
           const v = findInReactTree(res, (n) => n && n.message)?.message; // \u200b is used by another Aliucord plugin causing false positives, so we exclude it
-            if (v && v.content && v.content.match(/( \u200c|\u200d|[\u2060-\u2064])[^\u200b]/)) {
+            if (v && v.content && v.content.match(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/)) {
               res.props.children.props.children[2].props.children.push(
                 React.createElement(Lock)
               );
@@ -149,29 +145,15 @@ module.exports = class InvisbleChatRewrite extends Plugin {
 
   async __injectSendingMessages() {
     inject('invisible-catchMessage', messages, 'sendMessage', (args, res) => {
-      if (isActive) {
-        let content = args[1].content;
-        let matchHidden = content.match(/\#\!.{0,2000}\!\#/) || false
-        let matchPwd = content.match(/\#\?.{0,2000}\?\#/) || false
-        if (matchHidden && matchPwd) {
-          try {
-            let coverMessage = content.match(/(.{0,2000} .{0,2000}) \#\!/)[1] || false
-            if (coverMessage) {
-              matchPwd[0] = matchPwd[0].slice(2, -2)
-              matchHidden[0] = matchHidden[0].slice(2, -2)
-              args[1].content = this.__handleEncryption(coverMessage, matchHidden[0], matchPwd[0]);
-            } else {
-              this.__shakeApp();
-              return false;
-            }
-          } catch (e) {
-            this.__shakeApp();
-            return false;
-          }
-        }
-        else {
-          this.__shakeApp();
-          return false;
+      let content = args[1].content;
+      let matchHidden = content.match(/\#\!.{0,2000}\!\#/) || false
+      let matchPwd = content.match(/\#\?.{0,2000}\?\#/) || false
+      if (matchHidden && matchPwd) {
+        let coverMessage = content.match(/(.{0,2000} .{0,2000}) \#\!/)[1] || false
+        if (coverMessage) {
+          matchPwd[0] = matchPwd[0].slice(2, -2)
+          matchHidden[0] = matchHidden[0].slice(2, -2)
+          args[1].content = this.__handleEncryption(coverMessage, matchHidden[0], matchPwd[0]);
         }
       }
       return args;
@@ -180,18 +162,9 @@ module.exports = class InvisbleChatRewrite extends Plugin {
 
   __handleEncryption(coverMessage, inviMessage, password) {
     const steggo = new Steggo(true, false);
-    let encrypted = steggo.hide(inviMessage + ' ‍​', password, coverMessage); // \u200d to make sure the chance of wrong but as correct detected decryptions is low
-    return encrypted;                                                       // \u200b for detection of invisible messages, Apate and ALiucord Plugins use this
+    let encrypted = steggo.hide(inviMessage + '​', password, coverMessage); // \u200b for detection of invisible messages, Apate and ALiucord Plugins use this
+    return encrypted;                                                       
   }
-
-  __shakeApp() {
-    ComponentDispatch.dispatch('SHAKE_APP', {
-      duration: 500,
-      intensity: 2
-    });
-    return;
-  }
-
 
   pluginWillUnload() {
     uninject('invisible-chatbutton');

@@ -18,7 +18,7 @@ constructor(props) {
 render() {
   return (
     <Tooltip color="black" postion="top"
-    text={this.props.isEnabled ? (this.props.isActive ? 'Usage: CoverMessage #!Invisible Message!# #?Password?#' : 'Click to Toggle Encryption') : 'Create Hidden Message'}>
+    text={'Create Hidden Message'}>
       {({ onMouseLeave, onMouseEnter }) => (
           <Button
               style={{ marginTop: 1 }}
@@ -26,14 +26,10 @@ render() {
               size={Button.Sizes.ICON}
               onMouseEnter={onMouseEnter}
               onMouseLeave={onMouseLeave}
-              onClick={() => {
-                this.props.isActive = !this.props.isActive;
-              }}
           >
               <Icon
                   id={'invisiblechat-button-bar'}
                   name="LockClosed"
-                  style={this.props.isActive ? { color: "gold" } : { color: "white"}}
                   className={`${buttonClasses.contents} ${buttonWrapperClasses.button} ${buttonTextAreaClasses.button}`}
               />
           </Button>

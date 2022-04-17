@@ -233,7 +233,7 @@ class ModalComposerEncrypt extends React.Component {
                 const steggo = new Steggo(true, false);
                 messages.sendMessage(channels.getChannelId(), {
                   content: `${steggo.hide(
-                    this.state.secret + ' ­­­',
+                    this.state.secret + '​', // \u200B
                     this.state.password,
                     this.state.cover
                   )}`
@@ -254,7 +254,7 @@ class ModalComposerEncrypt extends React.Component {
               try {
                 const steggo = new Steggo(true, false);
                 clipboard.writeText(`${steggo.hide(
-                  this.state.secret + ' ‍​', // Space \u200d \u200b
+                  this.state.secret + '​', // \u200b
                   this.state.password,
                   this.state.cover
                 )}`);

@@ -35,13 +35,15 @@ const f        = require('./components/Functions');
 const LockIcon = require('./assets/Icons/LockIcon');
 const { Lock } = require('./assets/Icons/MessageIcon');
 const CloseButton = require("./assets/Icons/CloseButton");
+
 const { ModalComposerEncrypt, ModalComposerDecrypt } = require('./components/ModalComposer');
 
-const { ComponentDispatch } = getModule(["ComponentDispatch"], false)
+const { ComponentDispatch } = getModule(["ComponentDispatch"], false);
+
 let MiniPopover = getModule(
   (m) => m.default?.displayName === "MiniPopover",
   false
-)
+);
 
 let ChannelTextAreaButtons = getModule(
   (m) => m.type && m.type.displayName === 'ChannelTextAreaButtons',
@@ -146,10 +148,10 @@ module.exports = class InvisbleChatRewrite extends Plugin {
   async __injectSendingMessages() {
     inject('invisible-catchMessage', messages, 'sendMessage', (args, res) => {
       let content = args[1].content;
-      let matchHidden = content.match(/\#\!.{0,2000}\!\#/) || false
-      let matchPwd = content.match(/\#\?.{0,2000}\?\#/) || false
+      let matchHidden = content.match(/\#\!.{0,2000}\!\#/);
+      let matchPwd = content.match(/\#\?.{0,2000}\?\#/);
       if (matchHidden && matchPwd) {
-        let coverMessage = content.match(/(.{0,2000} .{0,2000}) \#\!/)[1] || false
+        let coverMessage = content.match(/(.{0,2000} .{0,2000}) \#\!/)[1];
         if (coverMessage) {
           matchPwd[0] = matchPwd[0].slice(2, -2)
           matchHidden[0] = matchHidden[0].slice(2, -2)

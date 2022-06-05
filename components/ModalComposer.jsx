@@ -144,7 +144,7 @@ class ModalComposerEncrypt extends React.Component {
     this.state = {
       secret: "",
       cover: "",
-      password: "",
+      password: "password",
       isValid: false,
       errors: []
     };

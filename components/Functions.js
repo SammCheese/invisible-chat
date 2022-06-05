@@ -8,10 +8,12 @@ const { getMessage } = getModule(['getMessages'], false)
 exports.doEmbed = async (messageId, ChannelId, content, url) => {
   const message = getMessage(ChannelId, messageId);
   let wh;
+  let image = {};
+
   if (url && this.isImage(url)) wh = await this.getImageResolutionByUrl(this.isImage(url));
-  let image = {}
   content = content.replace('​', '');
   url && this.isImage(url) ? image = { url: this.isImage(url), width: wh.width, height: wh.height } : image = {}
+
   let embed = {
     type: "rich",
     title: "Decrypted Message",
@@ -22,6 +24,7 @@ exports.doEmbed = async (messageId, ChannelId, content, url) => {
       text: "Made with ❤️ by c0dine and Sammy!",
     },
   };
+
   message.embeds.push(embed)
   this.updateMessage(message)
 }

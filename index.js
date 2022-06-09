@@ -20,6 +20,8 @@ if (!existsSync(nodeModulesPath)) {
   return;
 }
 
+
+// Kernel Users, run npm i in the folder and remove the code above this line to make everything work
 // Plugin Start
 
 const { Plugin } = require('powercord/entities');
@@ -38,7 +40,7 @@ const CloseButton = require("./assets/Icons/CloseButton");
 
 const { ModalComposerEncrypt, ModalComposerDecrypt } = require('./components/ModalComposer');
 
-const { ComponentDispatch } = getModule(["ComponentDispatch"], false);
+const INV_DETECTION = new RegExp(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/);
 
 let MiniPopover = getModule(
   (m) => m.default?.displayName === "MiniPopover",
@@ -89,22 +91,26 @@ module.exports = class InvisbleChatRewrite extends Plugin {
   async __injectDecryptButton() {
     inject('invichat-minipopover', MiniPopover, 'default', (_, res) => {
       const msg = findInReactTree(res, (n) => n && n.message)?.message;
+
       if (!msg) return res;
-      if (msg.content.match(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/)) {
-        res.props.children.unshift(
-          React.createElement('div', {
-            onClick: () => {
-              f.iteratePasswords(this.settings.get("userPasswords", []), ModalComposerDecrypt, {
-                author: msg.author.id,
-                content: msg.content,
-                channel: msg.channel_id,
-                message: msg.id
-              })
-            }
-          },
-          [React.createElement(LockIcon)])
-        )
-      }
+
+      const match = msg.content.match(INV_DETECTION) ?? msg.embeds.find(e => INV_DETECTION.test(e.rawDescription))?.rawDescription?.match(INV_DETECTION);
+
+      if (!match) return res;
+      
+      res.props.children.unshift(
+        React.createElement('div', {
+          onClick: () => {
+            f.iteratePasswords(this.settings.get("userPasswords", []), ModalComposerDecrypt, {
+              author: msg.author.id,
+              content: match.input,
+              channel: msg.channel_id,
+              message: msg.id
+            })
+          }
+        },
+        [React.createElement(LockIcon)])
+      )
       return res;
     })
     MiniPopover.default.displayName = 'MiniPopover';
@@ -125,21 +131,27 @@ module.exports = class InvisbleChatRewrite extends Plugin {
         MessageContent,
         'default',
         ([props], res) => {
-          const v = findInReactTree(res, (n) => n && n.message)?.message; // \u200b is used by another Aliucord plugin causing false positives, so we exclude it
-            if (v && v.content && v.content.match(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/)) {
-              res.props.children.props.children[2].props.children.push(
-                React.createElement(Lock)
-              );
-            }
-            if (v && v.embeds.find(e => e.footer && e.footer.text.includes("Made with ❤️ by c0dine and Sammy"))) {
-              res.props.children.props.children[2].props.children.push(
-                React.createElement('span', {
-                }, React.createElement(CloseButton, {
-                  message: v
-                }))
-              )
-            }
-            return res;
+          const msg = findInReactTree(res, (n) => n && n.message)?.message; // \u200b is used by another Aliucord plugin causing false positives, so we exclude it
+
+          if (!msg) return res;
+
+          const match = msg.content.match(INV_DETECTION) ?? msg.embeds.find(e => INV_DETECTION.test(e.rawDescription))?.rawDescription?.match(INV_DETECTION);
+
+          if (!match) return res;
+
+          res.props.children.props.children[2].props.children.push(
+            React.createElement(Lock)
+          );
+
+          if (msg.embeds.find(e => e.footer && e.footer.text.includes("c0dine and Sammy"))) {
+            res.props.children.props.children[2].props.children.push(
+              React.createElement('span', {
+              }, React.createElement(CloseButton, {
+                message: msg
+              }))
+            )
+          }
+          return res;
         }
       );
     }

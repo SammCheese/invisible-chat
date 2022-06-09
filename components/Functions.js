@@ -2,17 +2,26 @@ const { open: openModal } = require('powercord/modal');
 const { getModule, FluxDispatcher, React } = require('powercord/webpack');
 const StegCloak = require('stegcloak');
 
-
 const { getMessage } = getModule(['getMessages'], false)
 
+exports.doEmbedO = (message, embed) => {
+  message.embeds = message.embeds.map(this.cleanupEmbed);
+
+  message.embeds.push(embed);
+  this.updateMessage(message);
+}
+
 exports.doEmbed = async (messageId, ChannelId, content, url) => {
-  const message = getMessage(ChannelId, messageId);
   let wh;
   let image = {};
+  const message = await getMessage(ChannelId, messageId);
 
-  if (url && this.isImage(url)) wh = await this.getImageResolutionByUrl(this.isImage(url));
   content = content.replace('​', '');
-  url && this.isImage(url) ? image = { url: this.isImage(url), width: wh.width, height: wh.height } : image = {}
+
+  if (url && this.isImage(url)) {
+    image = await this.getImageResolutionByUrl(url);
+    image.url = url;
+  }
 
   let embed = {
     type: "rich",
@@ -25,8 +34,58 @@ exports.doEmbed = async (messageId, ChannelId, content, url) => {
     },
   };
 
-  message.embeds.push(embed)
-  this.updateMessage(message)
+  function embedO(embed) {
+    exports.doEmbedO(message, embed);
+  }
+  this.doEmbedO(message, embed);
+}
+
+// Thank you Lighty <3
+exports.cleanupEmbed = (embed) => {
+  /* backported code from MLV2 rewrite */
+  if (!embed.id) return embed; /* already cleaned */
+  const retEmbed = {};
+  if (typeof embed.rawTitle === 'string') retEmbed.title = embed.rawTitle;
+  if (typeof embed.rawDescription === 'string') retEmbed.description = embed.rawDescription;
+  if (typeof embed.referenceId !== 'undefined') retEmbed.reference_id = embed.referenceId;
+  if (typeof embed.color === 'string') retEmbed.color = embed.color;
+  if (typeof embed.type !== 'undefined') retEmbed.type = embed.type;
+  if (typeof embed.url !== 'undefined') retEmbed.url = embed.url;
+  if (typeof embed.provider === 'object') retEmbed.provider = { name: embed.provider.name, url: embed.provider.url };
+  if (typeof embed.footer === 'object') retEmbed.footer = { text: embed.footer.text, icon_url: embed.footer.iconURL, proxy_icon_url: embed.footer.iconProxyURL };
+  if (typeof embed.author === 'object') retEmbed.author = { name: embed.author.name, url: embed.author.url, icon_url: embed.author.iconURL, proxy_icon_url: embed.author.iconProxyURL };
+  if (typeof embed.timestamp === 'object' && embed.timestamp._isAMomentObject) retEmbed.timestamp = embed.timestamp.milliseconds();
+  if (typeof embed.thumbnail === 'object') {
+    if (typeof embed.thumbnail.proxyURL === 'string' || (typeof embed.thumbnail.url === 'string' && !embed.thumbnail.url.endsWith('?format=jpeg'))) {
+      retEmbed.thumbnail = {
+        url: embed.thumbnail.url,
+        proxy_url: typeof embed.thumbnail.proxyURL === 'string' ? embed.thumbnail.proxyURL.split('?format')[0] : undefined,
+        width: embed.thumbnail.width,
+        height: embed.thumbnail.height
+      };
+    }
+  }
+  if (typeof embed.image === 'object') {
+    retEmbed.image = {
+      url: embed.image.url,
+      proxy_url: embed.image.proxyURL,
+      width: embed.image.width,
+      height: embed.image.height
+    };
+  }
+  if (typeof embed.video === 'object') {
+    retEmbed.video = {
+      url: embed.video.url,
+      proxy_url: embed.video.proxyURL,
+      width: embed.video.width,
+      height: embed.video.height
+    };
+  }
+  if (Array.isArray(embed.fields) && embed.fields.length) {
+    retEmbed.fields = embed.fields.map(e => ({ name: e.rawName, value: e.rawValue, inline: e.inline }));
+  }
+  console.log(retEmbed);
+  return retEmbed;
 }
 
 exports.updateMessage = (message) => {
@@ -39,7 +98,7 @@ exports.updateMessage = (message) => {
 exports.removeEmbed = (messageId, ChannelId) => {
   const message = getMessage(ChannelId, messageId);
   for (var embed in message.embeds) {
-    if (message.embeds[embed].footer.text === "Made with ❤️ by c0dine and Sammy!") {
+    if (message.embeds[embed]?.footer?.text.includes("c0dine and Sammy!")) {
       message.embeds.splice(embed, 1);
     }
   }

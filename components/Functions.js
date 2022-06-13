@@ -1,10 +1,10 @@
+const StegCloak = require('stegcloak');
 const { open: openModal } = require('powercord/modal');
 const { getModule, FluxDispatcher, React } = require('powercord/webpack');
-const StegCloak = require('stegcloak');
 
 const { getMessage } = getModule(['getMessages'], false)
 
-exports.doEmbedO = (message, embed) => {
+exports.doEmbedUpdate = (message, embed) => {
   message.embeds = message.embeds.map(this.cleanupEmbed);
 
   message.embeds.push(embed);
@@ -12,7 +12,6 @@ exports.doEmbedO = (message, embed) => {
 }
 
 exports.doEmbed = async (messageId, ChannelId, content, url) => {
-  let wh;
   let image = {};
   const message = await getMessage(ChannelId, messageId);
 
@@ -34,10 +33,7 @@ exports.doEmbed = async (messageId, ChannelId, content, url) => {
     },
   };
 
-  function embedO(embed) {
-    exports.doEmbedO(message, embed);
-  }
-  this.doEmbedO(message, embed);
+  this.doEmbedUpdate(message, embed);
 }
 
 // Thank you Lighty <3
@@ -84,7 +80,6 @@ exports.cleanupEmbed = (embed) => {
   if (Array.isArray(embed.fields) && embed.fields.length) {
     retEmbed.fields = embed.fields.map(e => ({ name: e.rawName, value: e.rawValue, inline: e.inline }));
   }
-  console.log(retEmbed);
   return retEmbed;
 }
 
@@ -97,6 +92,7 @@ exports.updateMessage = (message) => {
 
 exports.removeEmbed = (messageId, ChannelId) => {
   const message = getMessage(ChannelId, messageId);
+
   for (var embed in message.embeds) {
     if (message.embeds[embed]?.footer?.text.includes("c0dine and Sammy!")) {
       message.embeds.splice(embed, 1);

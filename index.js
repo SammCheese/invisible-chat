@@ -1,13 +1,13 @@
 const { join } = require("path");
 const { existsSync } = require("fs");
 const { execSync } = require("child_process");
-const nodeModulesPath = join(__dirname,"node_modules");
+const nodeModulesPath = join(__dirname, "node_modules");
 
-function installDeps () {
+function installDeps() {
   console.log("Installing dependencies, please wait...");
   execSync("npm install --only=prod", {
     cwd: __dirname,
-    stdio: [ null, null, null ]
+    stdio: [null, null, null]
   });
   console.log("Dependencies successfully installed!");
   setTimeout(() => {
@@ -30,10 +30,10 @@ const { inject, uninject } = require('powercord/injector');
 const { getModule, React, messages } = require('powercord/webpack');
 const { findInReactTree } = require('powercord/util');
 
-const Steggo   = require('stegcloak');
+const Steggo = require('stegcloak');
 const Settings = require("./Settings/Settings");
-const Button   = require('./assets/Icons/Button');
-const f        = require('./components/Functions');
+const Button = require('./assets/Icons/Button');
+const f = require('./components/Functions');
 const LockIcon = require('./assets/Icons/LockIcon');
 const { Lock } = require('./assets/Icons/MessageIcon');
 const CloseButton = require("./assets/Icons/CloseButton");
@@ -42,12 +42,12 @@ const { ModalComposerEncrypt, ModalComposerDecrypt } = require('./components/Mod
 
 const INV_DETECTION = new RegExp(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/);
 
-let MiniPopover = getModule(
+const MiniPopover = getModule(
   (m) => m.default?.displayName === "MiniPopover",
   false
 );
 
-let ChannelTextAreaButtons = getModule(
+const ChannelTextAreaButtons = getModule(
   (m) => m.type && m.type.displayName === 'ChannelTextAreaButtons',
   false
 );
@@ -67,25 +67,26 @@ module.exports = class InvisbleChatRewrite extends Plugin {
   }
 
   async __injectChatBarIcon() {
-    inject(
-      'invisible-chatbutton',
-      ChannelTextAreaButtons,
-      'type',
-      (args, res) => {
-        const button = React.createElement('div', {
+    inject('invisible-chatbutton', ChannelTextAreaButtons, 'type', (args, res) => {
+
+      const button = React.createElement('div', {
           className: 'send-invisible-message',
           onClick: () => {
             openModal(ModalComposerEncrypt);
           }
-        }, React.createElement(Button))
-        try {
-          res.props.children.unshift(button);
-        } catch {}
-        return res;
+        }, React.createElement(Button)
+      );
+
+
+      try {
+        res.props.children.unshift(button);
+      } catch {
+        console.log("Error injecting invisible chat button");
+      }
+      return res;
       }
     )
-    ChannelTextAreaButtons.type.displayName =
-    "ChannelTextAreaButtons";
+    ChannelTextAreaButtons.type.displayName = "ChannelTextAreaButtons";
   }
 
   async __injectDecryptButton() {
@@ -94,10 +95,12 @@ module.exports = class InvisbleChatRewrite extends Plugin {
 
       if (!msg) return res;
 
-      const match = msg.content.match(INV_DETECTION) ?? msg.embeds.find(e => INV_DETECTION.test(e.rawDescription))?.rawDescription?.match(INV_DETECTION);
+      const match = 
+        msg.content.match(INV_DETECTION) ??
+        msg.embeds.find(e => INV_DETECTION.test(e.rawDescription))?.rawDescription?.match(INV_DETECTION);
 
       if (!match) return res;
-      
+
       res.props.children.unshift(
         React.createElement('div', {
           onClick: () => {
@@ -125,45 +128,44 @@ module.exports = class InvisbleChatRewrite extends Plugin {
       return d(m)?.toString().includes('MessageContent');
     });
 
-    if (MessageContent) {
-      inject(
-        'invisible-messageContent',
-        MessageContent,
-        'default',
-        ([props], res) => {
-          const msg = findInReactTree(res, (n) => n && n.message)?.message; // \u200b is used by another Aliucord plugin causing false positives, so we exclude it
+    // Occasionally, MessageContent is undefined
+    if (!MessageContent) return res;
+      
+    inject('invisible-messageContent', MessageContent, 'default', ([props], res) => {
+        const msg = findInReactTree(res, (n) => n && n.message)?.message;
 
-          if (!msg) return res;
+        if (!msg) return res;
 
-          const match = msg.content.match(INV_DETECTION) ?? msg.embeds.find(e => INV_DETECTION.test(e.rawDescription))?.rawDescription?.match(INV_DETECTION);
+        const match =
+          msg.content.match(INV_DETECTION) ??
+          msg.embeds.find(e => INV_DETECTION.test(e.rawDescription))?.rawDescription?.match(INV_DETECTION);
 
-          if (!match) return res;
+        if (!match) return res;
 
+        res.props.children.props.children[2].props.children.push(
+          React.createElement(Lock)
+        );
+
+        if (msg.embeds.find(e => e.footer && e.footer.text.includes("c0dine and Sammy"))) {
           res.props.children.props.children[2].props.children.push(
-            React.createElement(Lock)
-          );
-
-          if (msg.embeds.find(e => e.footer && e.footer.text.includes("c0dine and Sammy"))) {
-            res.props.children.props.children[2].props.children.push(
-              React.createElement('span', {
-              }, React.createElement(CloseButton, {
-                message: msg
-              }))
-            )
-          }
-          return res;
+            React.createElement('span', {}, React.createElement(CloseButton, {
+              message: msg
+            }))
+          )
         }
-      );
-    }
+
+        return res;
+      }
+    );
   }
 
   async __injectSendingMessages() {
     inject('invisible-catchMessage', messages, 'sendMessage', (args, res) => {
-      let content = args[1].content;
-      let matchHidden = content.match(/\#\!.{0,2000}\!\#/);
-      let matchPwd = content.match(/\#\?.{0,2000}\?\#/);
+      const content = args[1].content;
+      const matchHidden = content.match(/\#\!.{0,2000}\!\#/);
+      const matchPwd = content.match(/\#\?.{0,2000}\?\#/);
       if (matchHidden && matchPwd) {
-        let coverMessage = content.match(/(.{0,2000} .{0,2000}) \#\!/)[1];
+        const coverMessage = content.match(/(.{0,2000} .{0,2000}) \#\!/)[1];
         if (coverMessage) {
           matchPwd[0] = matchPwd[0].slice(2, -2)
           matchHidden[0] = matchHidden[0].slice(2, -2)
@@ -176,8 +178,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
 
   __handleEncryption(coverMessage, inviMessage, password) {
     const steggo = new Steggo(true, false);
-    let encrypted = steggo.hide(inviMessage + '​', password, coverMessage); // \u200b for detection of invisible messages, Apate and ALiucord Plugins use this
-    return encrypted;                                                       
+    return steggo.hide(inviMessage + '​', password, coverMessage); // \u200b for detection of invisible messages, Apate and ALiucord Plugins use this
   }
 
   pluginWillUnload() {

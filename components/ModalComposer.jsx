@@ -1,10 +1,10 @@
 const path = require("path");
 const { clipboard } = require("electron");
 
-const { React, messages, channels } = require("powercord/webpack");
 const { Modal } = require("powercord/components/modal");
 const { close: closeModal } = require("powercord/modal");
 const { FormTitle, Button } = require("powercord/components");
+const { React, messages, channels } = require("powercord/webpack");
 const { TextAreaInput, SelectInput } = require("powercord/components/settings");
 
 const Steggo = require("stegcloak");
@@ -176,6 +176,7 @@ class ModalComposerEncrypt extends React.Component {
         <Modal.Content>
           <div style={{ paddingTop: '10px'}}/>
           <TextAreaInput
+            required={true}
             value={this.state.secret}
             onChange={async (m) => {
               await this.setState({ secret: m });
@@ -203,6 +204,7 @@ class ModalComposerEncrypt extends React.Component {
               this.isValid();
             }}
             rows={1}
+            required={true}
           >
             Encryption Password
           </TextAreaInput>

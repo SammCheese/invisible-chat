@@ -1,6 +1,6 @@
 {
   "name": "invichat",
-  "version": "1.0.0",
+  "version": "1.4.3",
   "description": "Allows you to send invisible Discord messages to a specified user encrypted in an unusual way :)",
   "main": "index.js",
   "scripts": {

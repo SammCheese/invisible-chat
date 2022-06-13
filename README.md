@@ -21,7 +21,6 @@ git clone https://github.com/SammCheese/invisible-chat
 
 ### Inline Encryption
 
-Tap the Lock Icon in the Chatbar, it should turn Yellow. When its Yellow, Inline Encryption is Enabled.
 Usage:
 
 ```txt

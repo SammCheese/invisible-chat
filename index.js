@@ -127,11 +127,8 @@ module.exports = class InvisbleChatRewrite extends Plugin {
     const MessageContent = await getModule((m) => {
       return d(m)?.toString().includes('MessageContent');
     });
-
-    // Occasionally, MessageContent is undefined
-    if (!MessageContent) return res;
       
-    inject('invisible-messageContent', MessageContent, 'default', ([props], res) => {
+    inject('invisible-messageContent', MessageContent, 'default', (_, res) => {
         const msg = findInReactTree(res, (n) => n && n.message)?.message;
 
         if (!msg) return res;
@@ -142,12 +139,12 @@ module.exports = class InvisbleChatRewrite extends Plugin {
 
         if (!match) return res;
 
-        res.props.children.props.children[2].props.children.push(
+        res.props.children.props.children[3].props.children.push(
           React.createElement(Lock)
         );
 
         if (msg.embeds.find(e => e.footer && e.footer.text.includes("c0dine and Sammy"))) {
-          res.props.children.props.children[2].props.children.push(
+          res.props.children.props.children[3].props.children.push(
             React.createElement('span', {}, React.createElement(CloseButton, {
               message: msg
             }))

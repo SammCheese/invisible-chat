@@ -5,7 +5,7 @@ const { Modal } = require("powercord/components/modal");
 const { close: closeModal } = require("powercord/modal");
 const { FormTitle, Button } = require("powercord/components");
 const { React, messages, channels } = require("powercord/webpack");
-const { TextAreaInput, SelectInput } = require("powercord/components/settings");
+const { TextAreaInput, SelectInput, SwitchItem } = require("powercord/components/settings");
 
 const Steggo = require("stegcloak");
 
@@ -89,7 +89,9 @@ class ModalComposerDecrypt extends React.Component {
               async () => {
                 try {
                   const steggo = new Steggo(true, false);
+
                   const decrypted = await steggo.reveal(this.state.secret, this.state.password);
+
                   let url = decrypted.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/) || [];
                   loading = true;
                   this.forceUpdate();
@@ -146,6 +148,7 @@ class ModalComposerEncrypt extends React.Component {
       cover: "",
       password: "password",
       isValid: false,
+      useNullText: false,
       errors: []
     };
   }
@@ -153,9 +156,10 @@ class ModalComposerEncrypt extends React.Component {
   isValid() {
     if (
       this.state.secret &&
-      this.state.cover.split(' ').length >= 2 &&
+      ((this.state.cover.split(' ').length >= 2 &&
       this.state.cover.split(' ')[1] && // Enforcing the 2 words, space is NOT a valid thing
-      this.state.cover.split(' ')[0] &&
+      this.state.cover.split(' ')[0]) || 
+      this.state.useNullText) &&
       this.state.password != ""
     ) {
       this.setState({ isValid: true });
@@ -194,6 +198,7 @@ class ModalComposerEncrypt extends React.Component {
             }}
             rows={1}
             required={true}
+            disabled={this.state.useNullText}
           >
             Message Cover (must be more than 2 words)
           </TextAreaInput>
@@ -208,6 +213,15 @@ class ModalComposerEncrypt extends React.Component {
           >
             Encryption Password
           </TextAreaInput>
+          <SwitchItem
+            value={this.state.useNullText}
+            onChange={async (m) => {
+              await this.setState({ useNullText: m });
+              this.isValid();
+            }}
+          >
+            Don't use a Cover [Experimental]
+          </SwitchItem>
           {!!SettingStore.length &&
             <SelectInput
               options={SettingStore.map(user => ({
@@ -233,13 +247,21 @@ class ModalComposerEncrypt extends React.Component {
             onClick={() => {
               try {
                 const steggo = new Steggo(true, false);
+
+                const encrypted = steggo.hide(
+                  this.state.secret + '​', // \u200B
+                  this.state.password,
+                  this.state.useNullText ? 'd d ' : this.state.cover
+                )
+
+                const toSend = this.state.useNullText ?
+                  encrypted.replaceAll('d', '') :
+                  encrypted;
+
                 messages.sendMessage(channels.getChannelId(), {
-                  content: `${steggo.hide(
-                    this.state.secret + '​', // \u200B
-                    this.state.password,
-                    this.state.cover
-                  )}`
+                  content: `${toSend}`,
                 })
+
                 closeModal();
               } catch(e) {
                 this.setState({ errors: [e.message] });
@@ -255,11 +277,17 @@ class ModalComposerEncrypt extends React.Component {
             onClick={() => {
               try {
                 const steggo = new Steggo(true, false);
-                clipboard.writeText(`${steggo.hide(
-                  this.state.secret + '​', // \u200b
+
+                const encrypted = steggo.hide(
+                  this.state.secret + '​', // \u200B
                   this.state.password,
-                  this.state.cover
-                )}`);
+                  this.state.useNullText ? 'd d' : this.state.cover
+                );
+
+                this.state.useNullText ?
+                  clipboard.writeText(`${encrypted.replaceAll('d', '')}`):
+                  clipboard.writeText(encrypted)
+
                 closeModal();
               } catch (e) {
                 this.setState({ errors: [e.message] });

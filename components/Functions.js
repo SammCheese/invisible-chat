@@ -132,6 +132,11 @@ exports.iteratePasswords = (passwords, ModalComposer, messageData) => {
   let found = false;
   let processed = 0;
   let steggo = new StegCloak(true, false);
+
+  // Allows AutoDecrypt to work with empty covers
+  if (messageData.content.match(/^\W/)) messageData.content = `d ${messageData.content}d`;
+
+
   passwords.forEach(async (password) => {
     let result = await steggo.reveal(messageData.content, password.password);
     processed++;

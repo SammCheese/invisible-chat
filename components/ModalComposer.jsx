@@ -9,6 +9,8 @@ const { TextAreaInput, SelectInput, SwitchItem } = require("powercord/components
 
 const Steggo = require("stegcloak");
 
+const steggo = new Steggo(true, false);
+
 const { doEmbed } = require("./Functions");
 
 const pluginName = path.basename(path.resolve(__dirname, '..'));
@@ -88,13 +90,15 @@ class ModalComposerDecrypt extends React.Component {
             onClick={
               async () => {
                 try {
-                  const steggo = new Steggo(true, false);
+                  loading = true;
+
+                  if (this.state.secret.match(/^\W/)) this.state.secret = `d ${this.state.secret}d`;
 
                   const decrypted = await steggo.reveal(this.state.secret, this.state.password);
 
                   let url = decrypted.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/) || [];
-                  loading = true;
                   this.forceUpdate();
+
                   await doEmbed(this.props.message, this.props.channel, decrypted, url[0]);
                   closeModal();
                 } catch (e) {
@@ -110,7 +114,8 @@ class ModalComposerDecrypt extends React.Component {
             disabled={this.state.password ? false : true}
             onClick={async () => {
               try {
-                const steggo = new Steggo(true, false);
+                if (this.state.secret.match(/^\W/)) this.state.secret = `d ${this.state.secret}d`;
+
                 clipboard.writeText(
                   `${steggo.reveal(this.state.secret, this.state.password)}`
                 );
@@ -220,7 +225,7 @@ class ModalComposerEncrypt extends React.Component {
               this.isValid();
             }}
           >
-            Don't use a Cover [Experimental]
+            Don't use a Cover
           </SwitchItem>
           {!!SettingStore.length &&
             <SelectInput
@@ -246,8 +251,6 @@ class ModalComposerEncrypt extends React.Component {
             disabled={!this.state.isValid}
             onClick={() => {
               try {
-                const steggo = new Steggo(true, false);
-
                 const encrypted = steggo.hide(
                   this.state.secret + '​', // \u200B
                   this.state.password,
@@ -276,8 +279,6 @@ class ModalComposerEncrypt extends React.Component {
             disabled={!this.state.isValid}
             onClick={() => {
               try {
-                const steggo = new Steggo(true, false);
-
                 const encrypted = steggo.hide(
                   this.state.secret + '​', // \u200B
                   this.state.password,
@@ -285,7 +286,7 @@ class ModalComposerEncrypt extends React.Component {
                 );
 
                 this.state.useNullText ?
-                  clipboard.writeText(`${encrypted.replaceAll('d', '')}`):
+                  clipboard.writeText(`${encrypted.replaceAll('d', '').replaceAll(' ', '')}`) :
                   clipboard.writeText(encrypted)
 
                 closeModal();

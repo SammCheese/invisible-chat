@@ -84,7 +84,7 @@ exports.cleanupEmbed = (embed) => {
 }
 
 exports.updateMessage = (message) => {
-  FluxDispatcher.dirtyDispatch({
+  FluxDispatcher.dispatch({
     type: 'MESSAGE_UPDATE',
     message
   })

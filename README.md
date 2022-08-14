@@ -17,6 +17,8 @@ then run this:
 git clone https://github.com/SammCheese/invisible-chat
 ```
 
+## KERNEL USERS! YOU NEED TO RUN  "npm i" MANUALLY AND DELETE THE FIRST 23 LINES OF THE INDEX.JS FILE
+
 ## How I work
 
 ### Inline Encryption

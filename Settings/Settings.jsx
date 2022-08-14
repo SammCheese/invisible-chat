@@ -1,22 +1,16 @@
 // One of my first react components
 const { React, getModule } = require("powercord/webpack");
-const {
-  Category,
-  SwitchItem,
-  TextInput,
-  SliderInput,
-  KeybindRecorder,
-} = require("powercord/components/settings");
 const { FormTitle, Button } = require("powercord/components");
+const { Category, SwitchItem,TextInput} = require("powercord/components/settings");
+
+const f = require('../components/Functions.js');
+
 const CategoryImg = require("./CategoryImg");
 
 var userPasswords = [];
 module.exports = class Settings extends React.Component {
   constructor(props) {
     super(props);
-    this.plugin =
-      powercord.pluginManager.get("test-plugin") ||
-      powercord.pluginManager.get("test-plugin-master");
     this.state = {};
     this.state.currentId = "000000000000000000";
     this.listOpened = false;
@@ -90,14 +84,15 @@ module.exports = class Settings extends React.Component {
       <div>
         <div>
           <SwitchItem
-            disabled={true}
+            disabled={false}
             onChange={(val) => {
-              updateSetting("inlineEnabled", val);
+              updateSetting("useInvisibleAttachmentButton", val);
+              require('../index.js').prototype.__handleSettingsChange("useInvisibleAttachmentButton", val);
             }}
-            value={getSetting("inlineEnabled")}
-            note='Usage: Cover #!Hidden Message!# #?Password?#'
+            value={getSetting("useInvisibleAttachmentButton")}
+            note='REQUIRES CHANNEL SWITCH! Activating this will move the Encrypt button into the + Menu in your chatbar.'
             >
-            Use Inline Encryption (Always Enabled)
+            Move Encrypt Button to Attachment Menu
           </SwitchItem>
           <FormTitle style={{ color: "lightgrey", "margin-top": "10px" }}>Add Users to Quickly Encrypt and Decrypt their Messages</FormTitle>
           <Category

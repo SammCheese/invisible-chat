@@ -17,7 +17,6 @@ function installDeps() {
 
 if (!existsSync(nodeModulesPath)) {
   installDeps();
-  return;
 }
 
 // Kernel Users, run npm i in the folder and remove the code above this line to make everything work

@@ -1,24 +1,11 @@
 const { join } = require("path");
-const { existsSync, unlink } = require("fs");
-const { exec } = require("child_process");
+const { existsSync} = require("fs");
+const { execSync } = require("child_process");
 const nodeModulesPath = join(__dirname, "node_modules");
 
-async function installDeps() {
-  console.log("Installing dependencies, please wait...");
-  await exec("npm install --only=prod", { cwd: __dirname }, (err, stdout, stderr) => {
-    if (err) {
-      unlink(nodeModulesPath, () => {
-        console.log("Failed to install dependencies, retrying...")
-      });
-      return;
-    }
-  });
-}
 
 if (!existsSync(nodeModulesPath)) {
-  installDeps().then(() => {
-    powercord.pluginManager.remount(__dirname);
-  })
+  execSync("npm install --only=prod", { cwd: __dirname });
 }
 
 // Kernel Users, run npm i in the folder and remove the code above this line to make everything work

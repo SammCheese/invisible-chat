@@ -83,7 +83,6 @@ class ModalComposerDecrypt extends React.Component {
         <Modal.Footer>
           <Button
             color={Button.Colors.GREEN}
-            disabled={this.state.password}
             onClick={
               async () => {
                 try {
@@ -108,7 +107,6 @@ class ModalComposerDecrypt extends React.Component {
           </Button>
           <Button
             style={{ marginRight: '10px' }}
-            disabled={this.state.password}
             onClick={async () => {
               try {
                 if (this.state.secret.match(/^\W/)) this.state.secret = `d ${this.state.secret}d`;

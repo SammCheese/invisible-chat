@@ -4,20 +4,14 @@ This is a message encrypter for [Powercord](https://github.com/powercord-org/pow
 
 ## Install Me
 
-First `cd` into your powercord plugin directory, then
-the folder you want to clone into is
+If you're using Replugged, simply click [here](https://replugged.dev/install?url=SammCheese/invisible-chat)
 
-```txt
-powercord/src/Powercord/plugins
-```
-
-then run this:
+or run this in your plugin folder
 
 ```console
 git clone https://github.com/SammCheese/invisible-chat
 ```
 
-## KERNEL USERS! YOU NEED TO RUN  "npm i" MANUALLY AND DELETE THE FIRST 23 LINES OF THE INDEX.JS FILE
 
 ## How I work
 

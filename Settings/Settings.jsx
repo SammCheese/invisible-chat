@@ -5,7 +5,7 @@ const { Category, SwitchItem,TextInput} = require("powercord/components/settings
 
 const f = require('../components/Functions.js');
 
-const CategoryImg = require("./CategoryImg");
+const CategoryImg = require("powercord/components/settings").Category;
 
 var userPasswords = [];
 module.exports = class Settings extends React.Component {

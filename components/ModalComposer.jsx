@@ -49,7 +49,7 @@ class ModalComposerDecrypt extends React.Component {
           Secret Message
         </TextAreaInput>
         <TextAreaInput
-          value={this.state.password ? this.state.password : SettingStore.find(x => x.id === this.props.author)?.password || e}
+          value={this.state.password}
           onChange={async (e) => {
             await this.setState({ password: e });
           }}
@@ -83,7 +83,7 @@ class ModalComposerDecrypt extends React.Component {
         <Modal.Footer>
           <Button
             color={Button.Colors.GREEN}
-            disabled={this.state.password ? false : true}
+            disabled={this.state.password}
             onClick={
               async () => {
                 try {
@@ -108,7 +108,7 @@ class ModalComposerDecrypt extends React.Component {
           </Button>
           <Button
             style={{ marginRight: '10px' }}
-            disabled={this.state.password ? false : true}
+            disabled={this.state.password}
             onClick={async () => {
               try {
                 if (this.state.secret.match(/^\W/)) this.state.secret = `d ${this.state.secret}d`;
@@ -161,8 +161,7 @@ class ModalComposerEncrypt extends React.Component {
       ((this.state.cover.split(' ').length >= 2 &&
       this.state.cover.split(' ')[1] && // Enforcing the 2 words, space is NOT a valid thing
       this.state.cover.split(' ')[0]) || 
-      this.state.useNullText) &&
-      this.state.password != ""
+      this.state.useNullText)
     ) {
       this.setState({ isValid: true });
     } else {

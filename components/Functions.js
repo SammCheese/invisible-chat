@@ -1,9 +1,15 @@
-const StegCloak = require('stegcloak');
+const StegCloak = require('../utils/stegcloak')
 const { open: openModal } = require('powercord/modal');
 const { getModule, FluxDispatcher, React } = require('powercord/webpack');
 
 const { getMessage } = getModule(['getMessages'], false)
+const steggo = new StegCloak(true, false)
 
+
+/** Cleans the Embed and adds it to the Message
+ * @param {Object} message 
+ * @param {Object} embed 
+ */
 exports.doEmbedUpdate = (message, embed) => {
   message.embeds = message.embeds.map(this.cleanupEmbed);
 
@@ -11,6 +17,12 @@ exports.doEmbedUpdate = (message, embed) => {
   this.updateMessage(message);
 }
 
+/**Removes detection string, fetches image data and builds the Embed
+ * @param {Object} messageId 
+ * @param {String} ChannelId 
+ * @param {String} content 
+ * @param {String} url 
+ */
 exports.doEmbed = async (messageId, ChannelId, content, url) => {
   let image = {};
   const message = await getMessage(ChannelId, messageId);
@@ -33,10 +45,14 @@ exports.doEmbed = async (messageId, ChannelId, content, url) => {
     },
   };
 
-  this.doEmbedUpdate(message, embed);
+  await this.doEmbedUpdate(message, embed);
 }
 
-// Thank you Lighty <3
+/**
+ * Reverts the embed object to usable object, Thank you Lighty <3
+ * @param {Object} embed 
+ * @returns 
+ */
 exports.cleanupEmbed = (embed) => {
   /* backported code from MLV2 rewrite */
   if (!embed.id) return embed; /* already cleaned */
@@ -83,6 +99,10 @@ exports.cleanupEmbed = (embed) => {
   return retEmbed;
 }
 
+/**
+ * Updates a Message
+ * @param {Object} message 
+ */
 exports.updateMessage = (message) => {
   FluxDispatcher.dispatch({
     type: 'MESSAGE_UPDATE',
@@ -90,6 +110,11 @@ exports.updateMessage = (message) => {
   })
 }
 
+/**
+ * Removes the Decryption Embed
+ * @param {String} messageId 
+ * @param {String} ChannelId 
+ */
 exports.removeEmbed = (messageId, ChannelId) => {
   const message = getMessage(ChannelId, messageId);
 
@@ -101,16 +126,26 @@ exports.removeEmbed = (messageId, ChannelId) => {
   this.updateMessage(message);
 }
 
+/**
+ * Checks if the url is an Image url and returns it
+ * @param {String} url
+ * @returns {(String|false)} image url | false
+ */
 exports.isImage = (url) => {
-  if (url && url.match(/\.(jpeg|jpg|gif|png|webp)$/)) {
-    if (url.includes('cdn.discordapp.com') || url.includes('media.discordapp.net')) {
+  if (url && url.match(/[=|\.](jpeg|jpg|gif|png|webp)/)) {
+    if (url.match(/[media|cdn]\.discordapp\.[com|net]/i)) {
       return url
     }
-    return `https://images.weserv.nl/?url=${url}`;
+    return `https://images.weserv.nl/?url=${url}`; // Random images/links could be used to grab ip addresses, we use an image proxy
   }
   return false;
 }
 
+/**
+ * Returns width and height of an image given an URL
+ * @param {String} url 
+ * @returns {Promise} Promise object contains width and height of the image
+ */
 exports.getImageResolutionByUrl = async (url) => {
   return new Promise((resolve, reject) => {
     let img = new Image();
@@ -127,11 +162,16 @@ exports.getImageResolutionByUrl = async (url) => {
   });
 }
 
+/** Iterates through all registered Passwords and attempts to decrypt it, otherwise opens the ModalComposer
+ * @param {Array} passwords 
+ * @param {React.Component} ModalComposer 
+ * @param {Object} messageData 
+ * @returns 
+ */
 exports.iteratePasswords = (passwords, ModalComposer, messageData) => {
-  if (!passwords.length) return openModal(() => React.createElement(ModalComposer, messageData));
+  if (!passwords.length) return ModalComposer ? openModal(() => React.createElement(ModalComposer, messageData)) : false;
   let found = false;
   let processed = 0;
-  let steggo = new StegCloak(true, false);
 
   // Allows AutoDecrypt to work with empty covers
   if (messageData.content.match(/^\W/)) messageData.content = `d ${messageData.content}d`;
@@ -148,12 +188,39 @@ exports.iteratePasswords = (passwords, ModalComposer, messageData) => {
     }
     if (processed === passwords.length) {
       if (!found) {
-        return openModal(() => React.createElement(ModalComposer, messageData ));
+        return ModalComposer ? openModal(() => React.createElement(ModalComposer, messageData )) : false;
       }
     }
   })
 }
 
+/**
+ * Checks if the Password was correct
+ * 
+ * @param {String} result Decrypted Message
+ * @returns {boolean} true | false
+ */
 exports.isCorrectPassword = (result) => {
   return result.endsWith('​');
+}
+
+/**
+ * Encrypts Message
+ * @param {String} secret 
+ * @param {String} password 
+ * @param {String} cover 
+ * @returns {Promise<string>} Encrypted Message
+ */
+exports.encrypt = async (secret, password, cover) => {
+  return await steggo.hide(secret + '​', password, cover);
+}
+
+/**
+ * Decrypts Message
+ * @param {String} secret 
+ * @param {String} password 
+ * @returns {Promise<string>} Decrypted Message 
+ */
+exports.decrypt = async (secret, password) => {
+  return await steggo.reveal(secret, password);
 }

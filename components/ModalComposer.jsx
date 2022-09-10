@@ -4,16 +4,13 @@ const { clipboard } = require("electron");
 const { Modal } = require("powercord/components/modal");
 const { close: closeModal } = require("powercord/modal");
 const { FormTitle, Button } = require("powercord/components");
-const { React, messages, channels } = require("powercord/webpack");
+const { React, getModule, channels } = require("powercord/webpack");
 const { TextAreaInput, SelectInput, SwitchItem } = require("powercord/components/settings");
 
-const Steggo = require("stegcloak");
-
-const steggo = new Steggo(true, false);
-
-const { doEmbed } = require("./Functions");
-
+const { doEmbed, encrypt, decrypt } = require("./Functions");
 const pluginName = path.basename(path.resolve(__dirname, '..'));
+const { ComponentDispatch } = getModule([ 'ComponentDispatch' ], false);
+
 let loading;
 
 class ModalComposerDecrypt extends React.Component {
@@ -94,7 +91,7 @@ class ModalComposerDecrypt extends React.Component {
 
                   if (this.state.secret.match(/^\W/)) this.state.secret = `d ${this.state.secret}d`;
 
-                  const decrypted = await steggo.reveal(this.state.secret, this.state.password);
+                  const decrypted = await decrypt(this.state.secret, this.state.password);
 
                   let url = decrypted.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/) || [];
                   this.forceUpdate();
@@ -117,7 +114,7 @@ class ModalComposerDecrypt extends React.Component {
                 if (this.state.secret.match(/^\W/)) this.state.secret = `d ${this.state.secret}d`;
 
                 clipboard.writeText(
-                  `${steggo.reveal(this.state.secret, this.state.password)}`
+                  `${await decrypt(this.state.secret, this.state.password)}`
                 );
                 closeModal();
               } catch (e) {
@@ -205,8 +202,9 @@ class ModalComposerEncrypt extends React.Component {
             rows={1}
             required={true}
             disabled={this.state.useNullText}
+            note={"WARNING: THIS WILL BE VISIBLE TO OTHERS!"}
           >
-            Message Cover (must be more than 2 words)
+            Message Cover (More than 2 Words)
           </TextAreaInput>
           <TextAreaInput
             value={this.state.password}
@@ -250,9 +248,9 @@ class ModalComposerEncrypt extends React.Component {
           <Button
             color={Button.Colors.GREEN}
             disabled={!this.state.isValid}
-            onClick={() => {
+            onClick={async () => {
               try {
-                const encrypted = steggo.hide(
+                const encrypted = await encrypt(
                   this.state.secret + '​', // \u200B
                   this.state.password,
                   this.state.useNullText ? 'd d ' : this.state.cover
@@ -262,10 +260,10 @@ class ModalComposerEncrypt extends React.Component {
                   encrypted.replaceAll('d', '') :
                   encrypted;
 
-                messages.sendMessage(channels.getChannelId(), {
-                  content: `${toSend}`,
+                ComponentDispatch.dispatchToLastSubscribed("INSERT_TEXT", {
+                  plainText: `${toSend}`
                 })
-
+                
                 closeModal();
               } catch(e) {
                 this.setState({ errors: [e.message] });
@@ -278,9 +276,9 @@ class ModalComposerEncrypt extends React.Component {
           <Button
             style={{ marginRight: '10px'}}
             disabled={!this.state.isValid}
-            onClick={() => {
+            onClick={async () => {
               try {
-                const encrypted = steggo.hide(
+                const encrypted = await encrypt(
                   this.state.secret + '​', // \u200B
                   this.state.password,
                   this.state.useNullText ? 'd d' : this.state.cover

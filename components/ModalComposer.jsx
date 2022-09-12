@@ -11,7 +11,9 @@ const { doEmbed, encrypt, decrypt } = require("./Functions");
 const pluginName = path.basename(path.resolve(__dirname, '..'));
 const { ComponentDispatch } = getModule([ 'ComponentDispatch' ], false);
 
-let loading;
+// Globals
+let loading = false;
+let SettingStore = [];
 
 class ModalComposerDecrypt extends React.Component {
   constructor(props) {
@@ -29,9 +31,12 @@ class ModalComposerDecrypt extends React.Component {
     loading = false;
   }
 
-  render() {
-    const SettingStore = powercord.pluginManager.get(pluginName)?.settings?.get('userPasswords', []) ?? [];
+  componentDidMount() {
+    this.state.password = powercord.pluginManager.get(pluginName)?.settings?.get('defaultPassword', 'password')
+    SettingStore = powercord.pluginManager.get(pluginName)?.settings?.get('userPasswords', [])
+  }
 
+  render() {
     let user;
 
     return(
@@ -167,9 +172,12 @@ class ModalComposerEncrypt extends React.Component {
     }
   }
 
-  render() {
-    const SettingStore = powercord.pluginManager.get(pluginName)?.settings?.get('userPasswords', []) ?? [];
+  componentDidMount() {
+    this.state.password = powercord.pluginManager.get(pluginName)?.settings?.get('defaultPassword', 'password')
+    SettingStore = powercord.pluginManager.get(pluginName)?.settings?.get('userPasswords', [])
+  }
 
+  render() {
     let user;
 
     return(

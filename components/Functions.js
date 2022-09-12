@@ -1,20 +1,22 @@
-const StegCloak = require('../utils/stegcloak')
+
 const { open: openModal } = require('powercord/modal');
 const { getModule, FluxDispatcher, React } = require('powercord/webpack');
 
 const { getMessage } = getModule(['getMessages'], false)
+
+const path = require('path');
+const pluginName = path.basename(path.join(__dirname, '..'))
+const StegCloak = require('../utils/stegcloak')
 const steggo = new StegCloak(true, false)
 
-
-/** Cleans the Embed and adds it to the Message
- * @param {Object} message 
- * @param {Object} embed 
+/**
+ * Gets a specific Setting
+ * @param {String} setting 
+ * @param {any} defaultValue 
+ * @returns {any} any
  */
-exports.doEmbedUpdate = (message, embed) => {
-  message.embeds = message.embeds.map(this.cleanupEmbed);
-
-  message.embeds.push(embed);
-  this.updateMessage(message);
+exports.getSetting = (setting, defaultValue) => {
+  return powercord.pluginManager.get(pluginName).settings.get(setting, defaultValue);
 }
 
 /**Removes detection string, fetches image data and builds the Embed
@@ -24,79 +26,56 @@ exports.doEmbedUpdate = (message, embed) => {
  * @param {String} url 
  */
 exports.doEmbed = async (messageId, ChannelId, content, url) => {
-  let image = {};
   const message = await getMessage(ChannelId, messageId);
 
+  // Remove initial Detection String
   content = content.replace('​', '');
 
-  if (url && this.isImage(url)) {
-    image = await this.getImageResolutionByUrl(url);
-    image.url = url;
-  }
-
+  // Build base embed
   let embed = {
     type: "rich",
     title: "Decrypted Message",
     color: "0x45f5f5",
     description: content,
-    image: image,
+    video: {},
+    image: {},
+    thumbnail: {},
     footer: {
       text: "Made with ❤️ by c0dine and Sammy!",
-    },
+    }
   };
-
-  await this.doEmbedUpdate(message, embed);
-}
-
-/**
- * Reverts the embed object to usable object, Thank you Lighty <3
- * @param {Object} embed 
- * @returns 
- */
-exports.cleanupEmbed = (embed) => {
-  /* backported code from MLV2 rewrite */
-  if (!embed.id) return embed; /* already cleaned */
-  const retEmbed = {};
-  if (typeof embed.rawTitle === 'string') retEmbed.title = embed.rawTitle;
-  if (typeof embed.rawDescription === 'string') retEmbed.description = embed.rawDescription;
-  if (typeof embed.referenceId !== 'undefined') retEmbed.reference_id = embed.referenceId;
-  if (typeof embed.color === 'string') retEmbed.color = embed.color;
-  if (typeof embed.type !== 'undefined') retEmbed.type = embed.type;
-  if (typeof embed.url !== 'undefined') retEmbed.url = embed.url;
-  if (typeof embed.provider === 'object') retEmbed.provider = { name: embed.provider.name, url: embed.provider.url };
-  if (typeof embed.footer === 'object') retEmbed.footer = { text: embed.footer.text, icon_url: embed.footer.iconURL, proxy_icon_url: embed.footer.iconProxyURL };
-  if (typeof embed.author === 'object') retEmbed.author = { name: embed.author.name, url: embed.author.url, icon_url: embed.author.iconURL, proxy_icon_url: embed.author.iconProxyURL };
-  if (typeof embed.timestamp === 'object' && embed.timestamp._isAMomentObject) retEmbed.timestamp = embed.timestamp.milliseconds();
-  if (typeof embed.thumbnail === 'object') {
-    if (typeof embed.thumbnail.proxyURL === 'string' || (typeof embed.thumbnail.url === 'string' && !embed.thumbnail.url.endsWith('?format=jpeg'))) {
-      retEmbed.thumbnail = {
-        url: embed.thumbnail.url,
-        proxy_url: typeof embed.thumbnail.proxyURL === 'string' ? embed.thumbnail.proxyURL.split('?format')[0] : undefined,
-        width: embed.thumbnail.width,
-        height: embed.thumbnail.height
-      };
+  
+  if (url) {
+    if (this.isImage(url)) {
+      let res = await this.getImageResolutionByUrl(url);
+      embed.image = {
+        width: res.width,
+        height: res.height,
+        url
+      }
+    }
+    // Fucking awful workarounds
+    if (this.isVideo(url)) {
+      let res = await this.getVideoResolutionByUrl(url);
+      const proxy_url = url.match('cdn.discordapp.com') ? `${url.replace('cdn.discordapp.com', 'media.discordapp.net')}?format=jpeg` : url
+      embed.url = url
+      embed.video = {
+        url,
+        proxy_url: url,
+        width: res.width,
+        height: res.height
+      }
+      embed.thumbnail = {
+        height: res.height,
+        width: res.width,
+        url: proxy_url
+      }
     }
   }
-  if (typeof embed.image === 'object') {
-    retEmbed.image = {
-      url: embed.image.url,
-      proxy_url: embed.image.proxyURL,
-      width: embed.image.width,
-      height: embed.image.height
-    };
-  }
-  if (typeof embed.video === 'object') {
-    retEmbed.video = {
-      url: embed.video.url,
-      proxy_url: embed.video.proxyURL,
-      width: embed.video.width,
-      height: embed.video.height
-    };
-  }
-  if (Array.isArray(embed.fields) && embed.fields.length) {
-    retEmbed.fields = embed.fields.map(e => ({ name: e.rawName, value: e.rawValue, inline: e.inline }));
-  }
-  return retEmbed;
+  message.embeds.push(embed)
+
+  message.embeds = message.embeds.map(embed => this.cleanupEmbed(embed));
+  this.updateMessage(message)
 }
 
 /**
@@ -142,9 +121,51 @@ exports.isImage = (url) => {
 }
 
 /**
- * Returns width and height of an image given an URL
+ * Checks if the url is a Video URL and returns it
  * @param {String} url 
- * @returns {Promise} Promise object contains width and height of the image
+ * @returns {(String|false)} video url | false
+ */
+exports.isVideo = (url) => {
+  if (this.getSetting('embedVideos', false) === false) return false;
+
+  if (url && url.match(/[=|\.](mov|mp4|webm)/)) {
+    return url;
+  }
+  return false;
+}
+
+/**
+ * Returns width and height of a Video given its URL
+ * @param {String} url
+ * @returns {Promise<Object>}
+ */
+exports.getVideoResolutionByUrl = async (url) => {
+  return new Promise((resolve, reject) => {
+    let Video = document.createElement('video');
+    Video.autoplay=false;
+
+    Video.oncanplay= () => {
+      resolve({
+        width: Video.offsetWidth,
+        height: Video.offsetHeight
+      })
+      Video.src="about:blank";
+      document.body.removeChild(Video);
+    }
+
+    Video.onerror = () => {
+      reject();
+    }
+
+    document.body.appendChild(Video);
+    Video.src=url;
+  })
+}
+
+/**
+ * Returns width and height of an Image given its URL
+ * @param {String} url 
+ * @returns {Promise<Object>} {width, height}
  */
 exports.getImageResolutionByUrl = async (url) => {
   return new Promise((resolve, reject) => {
@@ -223,4 +244,56 @@ exports.encrypt = async (secret, password, cover) => {
  */
 exports.decrypt = async (secret, password) => {
   return await steggo.reveal(secret, password);
+}
+
+
+/**
+ * Reverts the embed object to usable object, Thank you Lighty <3
+ * @param {Object} embed 
+ * @returns 
+ */
+ exports.cleanupEmbed = (embed) => {
+  /* backported code from MLV2 rewrite */
+  if (!embed.id) return embed; /* already cleaned */
+  const retEmbed = {};
+  if (typeof embed.rawTitle === 'string') retEmbed.title = embed.rawTitle;
+  if (typeof embed.rawDescription === 'string') retEmbed.description = embed.rawDescription;
+  if (typeof embed.referenceId !== 'undefined') retEmbed.reference_id = embed.referenceId;
+  if (typeof embed.color === 'string') retEmbed.color = embed.color;
+  if (typeof embed.type !== 'undefined') retEmbed.type = embed.type;
+  if (typeof embed.url !== 'undefined') retEmbed.url = embed.url;
+  if (typeof embed.provider === 'object') retEmbed.provider = { name: embed.provider.name, url: embed.provider.url };
+  if (typeof embed.footer === 'object') retEmbed.footer = { text: embed.footer.text, icon_url: embed.footer.iconURL, proxy_icon_url: embed.footer.iconProxyURL };
+  if (typeof embed.author === 'object') retEmbed.author = { name: embed.author.name, url: embed.author.url, icon_url: embed.author.iconURL, proxy_icon_url: embed.author.iconProxyURL };
+  if (typeof embed.timestamp === 'object' && embed.timestamp._isAMomentObject) retEmbed.timestamp = embed.timestamp.milliseconds();
+  if (typeof embed.thumbnail === 'object') {
+    if (typeof embed.thumbnail.proxyURL === 'string' || (typeof embed.thumbnail.url === 'string' && !embed.thumbnail.url.endsWith('?format=jpeg'))) {
+      retEmbed.thumbnail = {
+        url: embed.thumbnail.url,
+        proxy_url: typeof embed.thumbnail.proxyURL === 'string' ? embed.thumbnail.proxyURL.split('?format')[0] : undefined,
+        width: embed.thumbnail.width,
+        height: embed.thumbnail.height
+      };
+    }
+  }
+  if (typeof embed.image === 'object') {
+    retEmbed.image = {
+      url: embed.image.url,
+      proxy_url: embed.image.proxyURL,
+      width: embed.image.width,
+      height: embed.image.height
+    };
+  }
+  if (typeof embed.video === 'object') {
+    retEmbed.video = {
+      url: embed.video.url,
+      proxy_url: embed.video.proxyURL,
+      width: embed.video.width,
+      height: embed.video.height
+    };
+  }
+  if (Array.isArray(embed.fields) && embed.fields.length) {
+    retEmbed.fields = embed.fields.map(e => ({ name: e.rawName, value: e.rawValue, inline: e.inline }));
+  }
+  return retEmbed;
 }

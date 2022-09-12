@@ -7,9 +7,9 @@ const { findInReactTree } = require('powercord/util');
 
 // React Elements
 const Settings = require("./Settings/Settings");
-const Button = require('./assets/Icons/Button');
+const chatbarButton = require('./assets/Icons/ChatbarButton');
 const f = require('./components/Functions');
-const LockIcon = require('./assets/Icons/LockIcon');
+const ToolbarButton = require('./assets/Icons/ToolbarButton');
 const { Lock } = require('./assets/Icons/MessageIcon');
 const CloseButton = require("./assets/Icons/CloseButton");
 const { ModalComposerEncrypt, ModalComposerDecrypt } = require('./components/ModalComposer');
@@ -111,7 +111,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
           onClick: () => {
             openModal(ModalComposerEncrypt);
           }
-        }, React.createElement(Button)
+        }, React.createElement(chatbarButton)
       );
 
       try {
@@ -154,7 +154,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
             })
           }
         },
-        [React.createElement(LockIcon)])
+        [React.createElement(ToolbarButton)])
       )
       return res;
     })

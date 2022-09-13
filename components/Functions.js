@@ -9,6 +9,8 @@ const pluginName = path.basename(path.join(__dirname, '..'))
 const StegCloak = require('../utils/stegcloak')
 const steggo = new StegCloak(true, false)
 
+const InvMediaHelper = require('./MediaHelper')
+
 /**
  * Gets a specific Setting
  * @param {String} setting 
@@ -46,30 +48,23 @@ exports.doEmbed = async (messageId, ChannelId, content, url) => {
   };
   
   if (url) {
-    if (this.isImage(url)) {
-      let res = await this.getImageResolutionByUrl(url);
-      embed.image = {
-        width: res.width,
-        height: res.height,
-        url
-      }
-    }
-    // Fucking awful workarounds
-    if (this.isVideo(url)) {
-      let res = await this.getVideoResolutionByUrl(url);
-      const proxy_url = url.match('cdn.discordapp.com') ? `${url.replace('cdn.discordapp.com', 'media.discordapp.net')}?format=jpeg` : url
-      embed.url = url
-      embed.video = {
-        url,
-        proxy_url: url,
-        width: res.width,
-        height: res.height
+    const media = new InvMediaHelper(url).constructMediaClass();
+
+    if (media.type) {
+      const state = await media.populateState();
+      console.log(state);
+
+      embed[media.type] = {
+        url: url,
+        width: media.width,
+        height: media.height
       }
       embed.thumbnail = {
-        height: res.height,
-        width: res.width,
-        url: proxy_url
+        url: media.thumbnail,
+        width: media.width,
+        height: media.height
       }
+      embed.url = url
     }
   }
   message.embeds.push(embed)
@@ -103,84 +98,6 @@ exports.removeEmbed = (messageId, ChannelId) => {
     }
   }
   this.updateMessage(message);
-}
-
-/**
- * Checks if the url is an Image url and returns it
- * @param {String} url
- * @returns {(String|false)} image url | false
- */
-exports.isImage = (url) => {
-  if (url && url.match(/[=|\.](jpeg|jpg|gif|png|webp)/)) {
-    if (url.match(/[media|cdn]\.discordapp\.[com|net]/i)) {
-      return url
-    }
-    return `https://images.weserv.nl/?url=${url}`; // Random images/links could be used to grab ip addresses, we use an image proxy
-  }
-  return false;
-}
-
-/**
- * Checks if the url is a Video URL and returns it
- * @param {String} url 
- * @returns {(String|false)} video url | false
- */
-exports.isVideo = (url) => {
-  if (this.getSetting('embedVideos', false) === false) return false;
-
-  if (url && url.match(/[=|\.](mov|mp4|webm)/)) {
-    return url;
-  }
-  return false;
-}
-
-/**
- * Returns width and height of a Video given its URL
- * @param {String} url
- * @returns {Promise<Object>}
- */
-exports.getVideoResolutionByUrl = async (url) => {
-  return new Promise((resolve, reject) => {
-    let Video = document.createElement('video');
-    Video.autoplay=false;
-
-    Video.oncanplay= () => {
-      resolve({
-        width: Video.offsetWidth,
-        height: Video.offsetHeight
-      })
-      Video.src="about:blank";
-      document.body.removeChild(Video);
-    }
-
-    Video.onerror = () => {
-      reject();
-    }
-
-    document.body.appendChild(Video);
-    Video.src=url;
-  })
-}
-
-/**
- * Returns width and height of an Image given its URL
- * @param {String} url 
- * @returns {Promise<Object>} {width, height}
- */
-exports.getImageResolutionByUrl = async (url) => {
-  return new Promise((resolve, reject) => {
-    let img = new Image();
-    img.onload = () => {
-      resolve({
-        width: img.naturalWidth,
-        height: img.naturalHeight
-      });
-    };
-    img.onerror = () => {
-      reject();
-    };
-    img.src = url;
-  });
 }
 
 /** Iterates through all registered Passwords and attempts to decrypt it, otherwise opens the ModalComposer

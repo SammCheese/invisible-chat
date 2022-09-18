@@ -1,3 +1,4 @@
+// @ts-nocheck
 
 const { open: openModal } = require('powercord/modal');
 const { getModule, FluxDispatcher, React } = require('powercord/webpack');
@@ -9,7 +10,11 @@ const pluginName = path.basename(path.join(__dirname, '..'))
 const StegCloak = require('../utils/stegcloak')
 const steggo = new StegCloak(true, false)
 
-const InvMediaHelper = require('./MediaHelper')
+
+// Temporary Solution
+const EMBED_URL = "https://EmbedBot.hubertmoszkarel.repl.co"
+
+let isLoading = false;
 
 /**
  * Gets a specific Setting
@@ -21,6 +26,26 @@ exports.getSetting = (setting, defaultValue) => {
   return powercord.pluginManager.get(pluginName).settings.get(setting, defaultValue);
 }
 
+exports.fetchEmbed = async (url) => {
+  isLoading = true;
+
+  return new Promise((resolve, reject) => {
+    fetch(EMBED_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        url: url
+      }),
+      headers: {
+
+        'Content-Type': 'application/json; charset=UTF-8',
+      }
+    }).then(res => res.json())
+      .then(json =>  resolve(json))
+      .catch(err => reject(new Error(err)))
+  })
+
+}
+
 /**Removes detection string, fetches image data and builds the Embed
  * @param {Object} messageId 
  * @param {String} ChannelId 
@@ -29,6 +54,7 @@ exports.getSetting = (setting, defaultValue) => {
  */
 exports.doEmbed = async (messageId, ChannelId, content, url) => {
   const message = await getMessage(ChannelId, messageId);
+  let attachmentEmbed;
 
   // Remove initial Detection String
   content = content.replace('​', '');
@@ -39,36 +65,26 @@ exports.doEmbed = async (messageId, ChannelId, content, url) => {
     title: "Decrypted Message",
     color: "0x45f5f5",
     description: content,
-    video: {},
-    image: {},
-    thumbnail: {},
     footer: {
       text: "Made with ❤️ by c0dine and Sammy!",
     }
   };
   
   if (url) {
-    const media = new InvMediaHelper(url).constructMediaClass();
-
-    if (media.type) {
-      const state = await media.populateState();
-      console.log(state);
-
-      embed[media.type] = {
-        url: url,
-        width: media.width,
-        height: media.height
+    if (!isLoading) {
+      try {
+        attachmentEmbed = await this.fetchEmbed(url);
+        attachmentEmbed.footer = {
+          text: "Made with ❤️ by c0dine and Sammy!"
+        }
+      } catch (e) {
+        console.error(e);
       }
-      embed.thumbnail = {
-        url: media.thumbnail,
-        width: media.width,
-        height: media.height
-      }
-      embed.url = url
     }
   }
+  
   message.embeds.push(embed)
-
+  if (attachmentEmbed) message.embeds.push(attachmentEmbed);
   message.embeds = message.embeds.map(embed => this.cleanupEmbed(embed));
   this.updateMessage(message)
 }
@@ -107,7 +123,7 @@ exports.removeEmbed = (messageId, ChannelId) => {
  * @returns 
  */
 exports.iteratePasswords = (passwords, ModalComposer, messageData) => {
-  if (!passwords.length) return ModalComposer ? openModal(() => React.createElement(ModalComposer, messageData)) : false;
+  if (!passwords.length) return openModal(() => React.createElement(ModalComposer, messageData));
   let found = false;
   let processed = 0;
 
@@ -150,7 +166,11 @@ exports.isCorrectPassword = (result) => {
  * @returns {Promise<string>} Encrypted Message
  */
 exports.encrypt = async (secret, password, cover) => {
-  return await steggo.hide(secret + '​', password, cover);
+  try {
+    return await steggo.hide(secret + '​', password, cover);
+  } catch (e) {
+    return `We encountered an Error: ${e}`;
+  }
 }
 
 /**
@@ -160,12 +180,16 @@ exports.encrypt = async (secret, password, cover) => {
  * @returns {Promise<string>} Decrypted Message 
  */
 exports.decrypt = async (secret, password) => {
-  return await steggo.reveal(secret, password);
+  try {
+    return await steggo.reveal(secret, password);
+  } catch (e) {
+    return `We encountered an Error: ${e}`;
+  }
 }
 
 
 /**
- * Reverts the embed object to usable object, Thank you Lighty <3
+ * Reverts the embed object back to a usable object, Thank you Lighty <3
  * @param {Object} embed 
  * @returns 
  */

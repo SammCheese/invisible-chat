@@ -16,9 +16,9 @@ const { ModalComposerEncrypt, ModalComposerDecrypt } = require('./components/Mod
 
 // Globals
 const INV_DETECTION = new RegExp(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/);
-const MiniPopover = getModule((m) => m.default?.displayName === "MiniPopover", false);
-const ChannelTextAreaButtons = getModule((m) => m.type && m.type.displayName === 'ChannelTextAreaButtons',false);
 const { MenuItem } = getModule(['MenuItem'], false);
+const MiniPopover = getModule((m) => m.default?.displayName === "MiniPopover", false);
+const ChannelTextAreaButtons = getModule((m) => m.type && m.type.displayName === 'ChannelTextAreaButtons', false);
 
 module.exports = class InvisbleChatRewrite extends Plugin {
   async startPlugin() {
@@ -27,8 +27,10 @@ module.exports = class InvisbleChatRewrite extends Plugin {
       category: this.entityID,
       render: Settings,
     });
+
     //Disabled until further notice
     //this.__injectSendingMessages();
+
     this.__injectIndicator();
     this.__injectDecryptButton();
 
@@ -36,7 +38,6 @@ module.exports = class InvisbleChatRewrite extends Plugin {
       this.__injectAttachmentButton() :
       this.__injectChatBarIcon();
   }
-  
 
   async __handleSettingsChange(setting, value) {
     switch (setting) {
@@ -60,7 +61,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
     // No point in trying to inject if the module is not found
     if (typeof ChannelAttachMenu === 'undefined') return;
 
-    inject('invisible-attachbutton',  ChannelAttachMenu, 'default', (args, res) => {
+    inject('invisible-attachbutton', ChannelAttachMenu, 'default', (args, res) => {
 
       res.props.children.push(
         React.createElement(MenuItem, {
@@ -107,19 +108,19 @@ module.exports = class InvisbleChatRewrite extends Plugin {
 
       // Create the Button Element
       const button = React.createElement('div', {
-          className: 'send-invisible-message',
-          onClick: () => {
-            openModal(ModalComposerEncrypt);
-          }
-        }, React.createElement(chatbarButton)
+        className: 'send-invisible-message',
+        onClick: () => {
+          openModal(ModalComposerEncrypt);
+        }
+      }, React.createElement(chatbarButton)
       );
 
       try {
         // Add the Button to the Chatbar
         res.props.children.unshift(button);
-      } catch {}
+      } catch { }
       return res;
-      }
+    }
     )
     ChannelTextAreaButtons.type.displayName = "ChannelTextAreaButtons";
   }
@@ -134,7 +135,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
       if (!msg) return res;
 
       // Is this message an encrypted message?
-      const match = 
+      const match =
         msg.content.match(INV_DETECTION) ??
         msg.embeds.find(e => INV_DETECTION.test(e.rawDescription))?.rawDescription?.match(INV_DETECTION);
 
@@ -154,7 +155,7 @@ module.exports = class InvisbleChatRewrite extends Plugin {
             })
           }
         },
-        [React.createElement(ToolbarButton)])
+          [React.createElement(ToolbarButton)])
       )
       return res;
     })
@@ -172,35 +173,35 @@ module.exports = class InvisbleChatRewrite extends Plugin {
 
     // Error handling for if the module is not found
     if (!MessageContent) return;
-      
+
     inject('invisible-messageContent', MessageContent, 'default', (_, res) => {
-        const msg = findInReactTree(res, (n) => n && n.message)?.message;
+      const msg = findInReactTree(res, (n) => n && n.message)?.message;
 
-        if (!msg) return res;
+      if (!msg) return res;
 
-        // Is this message an encrypted message?
-        const match =
-          msg.content.match(INV_DETECTION) ??
-          msg.embeds.find(e => INV_DETECTION.test(e.rawDescription))?.rawDescription?.match(INV_DETECTION);
+      // Is this message an encrypted message?
+      const match =
+        msg.content.match(INV_DETECTION) ??
+        msg.embeds.find(e => INV_DETECTION.test(e.rawDescription))?.rawDescription?.match(INV_DETECTION);
 
-        // If not, STOP.
-        if (!match) return res;
+      // If not, STOP.
+      if (!match) return res;
 
+      res.props.children.props.children[3].props.children.push(
+        React.createElement(Lock)
+      );
+
+      // Look through the footers for our default footer, add a Discard Button if we find it
+      if (msg.embeds.find(e => e.footer && e.footer.text.includes("c0dine and Sammy"))) {
         res.props.children.props.children[3].props.children.push(
-          React.createElement(Lock)
-        );
-
-        // Look through the footers for our default footer, add a Discard Button if we find it
-        if (msg.embeds.find(e => e.footer && e.footer.text.includes("c0dine and Sammy"))) {
-          res.props.children.props.children[3].props.children.push(
-            React.createElement('span', {}, React.createElement(CloseButton, {
-              message: msg
-            }))
-          )
-        }
-
-        return res;
+          React.createElement('span', {}, React.createElement(CloseButton, {
+            message: msg
+          }))
+        )
       }
+
+      return res;
+    }
     );
   }
 

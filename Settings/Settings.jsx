@@ -94,15 +94,6 @@ module.exports = class Settings extends React.Component {
             >
             Move Encrypt Button to Attachment Menu
           </SwitchItem>
-          <SwitchItem
-          onChange={(val) => {
-            updateSetting("embedVideos", val);
-          }}
-          value={getSetting("embedVideos", false)}
-          note="WARNING: This might expose your IP to Third Parties"
-          >
-            Embed Videos (EXPERIMENTAL)
-          </SwitchItem>
           <TextInput
           onChange={(val) => {
             updateSetting("defaultPassword", val);

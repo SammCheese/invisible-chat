@@ -29,26 +29,19 @@ exports.getSetting = (setting, defaultValue) => {
 exports.fetchEmbed = async (url) => {
   isLoading = true;
 
-  return new Promise((resolve, reject) => {
-    fetch(EMBED_URL, {
+  const response = await fetch(EMBED_URL, {
       method: "POST",
+      cache: 'no-cache',
+      mode: 'cors',
       body: JSON.stringify({
         url: url
       }),
       headers: {
         'Content-Type': 'application/json'
       }
-    }).then(res => res.json())
-      .then(json =>   {
-        isLoading = false;
-        resolve(json)
-      })
-      .catch(err => {
-        isLoading = false;
-        reject(new Error(err))
-      })
-  })
+    })
 
+    return await response.json();
 }
 
 /**Removes detection string, fetches image data and builds the Embed
@@ -76,16 +69,13 @@ exports.doEmbed = async (messageId, ChannelId, content, url) => {
   
   if (url) {
     if (!isLoading) {
-      try {
-        const attMe = await this.fetchEmbed(url);
-        console.log(attMe)
-        attMe.footer = {
+      const attMe = await this.fetchEmbed(url).then((data) => {
+        data.footer = {
           text: "Made with ❤️ by c0dine and Sammy!"
         }
-        message.embeds.push(attMe);
-      } catch (e) {
-        console.error(e);
-      }
+
+        message.embeds.push(data);
+      })
     }
   }
   

@@ -36,12 +36,17 @@ exports.fetchEmbed = async (url) => {
         url: url
       }),
       headers: {
-
-        'Content-Type': 'application/json; charset=UTF-8',
+        'Content-Type': 'application/json'
       }
     }).then(res => res.json())
-      .then(json =>  resolve(json))
-      .catch(err => reject(new Error(err)))
+      .then(json =>   {
+        isLoading = false;
+        resolve(json)
+      })
+      .catch(err => {
+        isLoading = false;
+        reject(new Error(err))
+      })
   })
 
 }
@@ -54,7 +59,6 @@ exports.fetchEmbed = async (url) => {
  */
 exports.doEmbed = async (messageId, ChannelId, content, url) => {
   const message = await getMessage(ChannelId, messageId);
-  let attachmentEmbed;
 
   // Remove initial Detection String
   content = content.replace('​', '');
@@ -73,10 +77,12 @@ exports.doEmbed = async (messageId, ChannelId, content, url) => {
   if (url) {
     if (!isLoading) {
       try {
-        attachmentEmbed = await this.fetchEmbed(url);
-        attachmentEmbed.footer = {
+        const attMe = await this.fetchEmbed(url);
+        console.log(attMe)
+        attMe.footer = {
           text: "Made with ❤️ by c0dine and Sammy!"
         }
+        message.embeds.push(attMe);
       } catch (e) {
         console.error(e);
       }
@@ -84,7 +90,6 @@ exports.doEmbed = async (messageId, ChannelId, content, url) => {
   }
   
   message.embeds.push(embed)
-  if (attachmentEmbed) message.embeds.push(attachmentEmbed);
   message.embeds = message.embeds.map(embed => this.cleanupEmbed(embed));
   this.updateMessage(message)
 }

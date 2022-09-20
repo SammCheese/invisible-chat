@@ -12,9 +12,7 @@ const steggo = new StegCloak(true, false)
 
 
 // Temporary Solution
-const EMBED_URL = "https://EmbedBot.hubertmoszkarel.repl.co"
-
-let isLoading = false;
+const EMBED_URL = "https://embed.sammcheese.net"
 
 /**
  * Gets a specific Setting
@@ -27,21 +25,45 @@ exports.getSetting = (setting, defaultValue) => {
 }
 
 exports.fetchEmbed = async (url) => {
-  isLoading = true;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
 
-  const response = await fetch(EMBED_URL, {
-      method: "POST",
-      cache: 'no-cache',
-      mode: 'cors',
-      body: JSON.stringify({
-        url: url
-      }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
+  const options = {
+    signal: controller.signal,
+    method: "POST",
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      url: url
     })
+  }
 
-    return await response.json();
+
+  const rawRes = await fetch(EMBED_URL, options)
+
+  return await rawRes.json();
+}
+
+exports.fetchEmbedOld = async (url) => {
+  if (!url.match(/[media|cdn]\.discordapp\.[com|net]/i)) {
+    url = `https://images.weserv.nl/?url=${this.url}`
+  }
+
+  return new Promise((resolve, reject) => {
+    let img = new Image();
+    img.onload = () => {
+      resolve({
+        width: img.naturalWidth,
+        height: img.naturalHeight
+      })
+    };
+    img.onerror = () => {
+      reject();
+    }
+    img.src = url;
+  })
 }
 
 /**Removes detection string, fetches image data and builds the Embed
@@ -52,6 +74,7 @@ exports.fetchEmbed = async (url) => {
  */
 exports.doEmbed = async (messageId, ChannelId, content, url) => {
   const message = await getMessage(ChannelId, messageId);
+  let attachment;
 
   // Remove initial Detection String
   content = content.replace('​', '');
@@ -68,18 +91,26 @@ exports.doEmbed = async (messageId, ChannelId, content, url) => {
   };
   
   if (url) {
-    if (!isLoading) {
-      const attMe = await this.fetchEmbed(url).then((data) => {
-        data.footer = {
-          text: "Made with ❤️ by c0dine and Sammy!"
+    try {
+      attachment = await this.fetchEmbed(url);
+      console.log(attachment)
+      attachment.footer = {
+        text: "Made with ❤️ by c0dine and Sammy!"
+      }
+    } catch (e) {
+      if (url.match(/[=|\.](jpeg|jpg|gif|png|webp)/) && !attachment) {
+        const res = await this.fetchEmbedOld(url);
+        embed.image = {
+          url,
+          width: res.width,
+          height: res.height
         }
-
-        message.embeds.push(data);
-      })
+      }
     }
   }
   
   message.embeds.push(embed)
+  if (attachment) message.embeds.push(attachment);
   message.embeds = message.embeds.map(embed => this.cleanupEmbed(embed));
   this.updateMessage(message)
 }

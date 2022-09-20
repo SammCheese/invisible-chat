@@ -190,6 +190,11 @@ module.exports = class Settings extends React.Component {
               Add New User
             </Button>
           </Category>
+
+          <code>
+          <div style={{ color: 'white'}}>Tip: Press CTRL+H then send a message like this:</div>
+          <div style={{ color: 'white'}}>cover message *hidden message*</div>
+          </code>
         </div>
       </div>
     );

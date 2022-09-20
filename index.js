@@ -15,10 +15,29 @@ const CloseButton = require("./assets/Icons/CloseButton");
 const { ModalComposerEncrypt, ModalComposerDecrypt } = require('./components/ModalComposer');
 
 // Globals
-const INV_DETECTION = new RegExp(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/);
+let activeHotkey = false;
+
 const { MenuItem } = getModule(['MenuItem'], false);
+const { ComponentDispatch } = getModule(["ComponentDispatch"], false)
+
+const INV_DETECTION = new RegExp(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/);
 const MiniPopover = getModule((m) => m.default?.displayName === "MiniPopover", false);
 const ChannelTextAreaButtons = getModule((m) => m.type && m.type.displayName === 'ChannelTextAreaButtons', false);
+
+
+function keypress(e) {
+  if (e.ctrlKey && e.key === 'h') {
+    activeHotkey = !activeHotkey;
+    const bar = document.querySelector('.scrollableContainer-15eg7h.webkit-QgSAqd')
+    if (activeHotkey) {
+      bar.style.border = '1px solid'
+      bar.style.borderColor = '#09FFFF'
+    } else {
+      bar.style.border = '';
+      bar.style.borderColor = '';
+    }
+  }
+}
 
 module.exports = class InvisbleChatRewrite extends Plugin {
   async startPlugin() {
@@ -28,14 +47,14 @@ module.exports = class InvisbleChatRewrite extends Plugin {
       render: Settings,
     });
 
-    //Disabled until further notice
-    //this.__injectSendingMessages();
-
+    document.addEventListener('keydown', keypress);
+    
     this.__injectIndicator();
     this.__injectDecryptButton();
+    this.__injectSendingMessages();
 
     this.settings.get("useInvisibleAttachmentButton", false) ?
-      this.__injectAttachmentButton() :
+    this.__injectAttachmentButton():
       this.__injectChatBarIcon();
   }
 
@@ -207,15 +226,23 @@ module.exports = class InvisbleChatRewrite extends Plugin {
 
   async __injectSendingMessages() {
     inject('invisible-catchMessage', messages, 'sendMessage', async (args, res) => {
-      const content = args[1].content;
-      const matchHidden = content.match(/\#\!.{0,2000}\!\#/);
-      const matchPwd = content.match(/\#\?.{0,2000}\?\#/);
-      if (await matchHidden && await matchPwd) {
-        const coverMessage = content.match(/(.{0,2000} .{0,2000}) \#\!/)[1];
-        if (await coverMessage) {
-          matchPwd[0] = matchPwd[0].slice(2, -2)
-          matchHidden[0] = matchHidden[0].slice(2, -2)
-          args[1].content = await f.encrypt(coverMessage, matchHidden[0], matchPwd[0]);
+      if (activeHotkey) {
+        try {
+          const content = args[1].content;
+          const cover = content.match(/(.{0,2000})\*.{0,2000}\*/)[1]
+          const hidden = content.match(/\*.{0,2000}\*/)[0].replaceAll('*', '')
+          const pw = this.settings.get('defaultPassword', 'password');
+  
+          const enc = f.encrypt(hidden, pw, cover);
+  
+          args[1].content = await enc;
+        } catch (e) {
+          // DO NOT SEND THE MESSAGE UNDER ANY CIRCUMSTANCE
+          args[1].content = "";
+          return ComponentDispatch.dispatch('SHAKE_APP', {
+            duration: 500,
+            intensity: 2
+          });
         }
       }
       return args;
@@ -229,5 +256,6 @@ module.exports = class InvisbleChatRewrite extends Plugin {
     uninject('invichat-minipopover');
     uninject('invisible-attachbutton');
     powercord.api.settings.unregisterSettings("invichat");
+    document.removeEventListener('keydown', keypress)
   }
 }

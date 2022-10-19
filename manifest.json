@@ -1,0 +1,20 @@
+{
+    "id": "dev.replugged.PluginTemplate",
+    "name": "Plugin Template",
+    "description": "A plugin template",
+    "author": {
+        "name": "",
+        "discord_id": "",
+        "github": ""
+    },
+    "version": "1.0.0",
+    "license": "MIT",
+    "type": "plugin",
+    "renderer": "index.ts",
+    "dependencies": {
+        "required": ["dev.replugged.lifecycle.WebpackReady"]
+    },
+    "dependents": {
+        "required": ["dev.replugged.lifecycle.WebpackStart"]
+    }
+}

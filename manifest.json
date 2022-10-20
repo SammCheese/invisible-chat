@@ -12,9 +12,6 @@
     "type": "plugin",
     "renderer": "index.ts",
     "dependencies": {
-        "required": ["dev.replugged.lifecycle.WebpackReady"]
-    },
-    "dependents": {
-        "required": ["dev.replugged.lifecycle.WebpackStart"]
+        "required": ["dev.replugged.lifecycle.WebpackReady", "dev.replugged.lifecycle.WebpackStart"]
     }
 }

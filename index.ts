@@ -1,8 +1,6 @@
-import replugged from 'replugged';
+import { webpack, injector } from 'replugged';
 
 export async function start () {
-  const { webpack, injector } = replugged;
-
   const typingMod = await webpack.waitFor(webpack.byPropsFilter([ 'startTyping' ]));
   const getChannelMod = await webpack.waitFor(webpack.byPropsFilter([ 'getChannel' ])) as {
     getChannel: (id: string) => {

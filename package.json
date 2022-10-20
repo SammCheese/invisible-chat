@@ -13,6 +13,7 @@
   "types": "types.d.ts",
   "devDependencies": {
     "@electron/asar": "^3.2.1",
+    "@fal-works/esbuild-plugin-global-externals": "^2.1.2",
     "@types/node": "^18.11.2",
     "@typescript-eslint/eslint-plugin": "^5.40.1",
     "@typescript-eslint/parser": "^5.40.1",

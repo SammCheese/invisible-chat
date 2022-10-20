@@ -1,4 +1,5 @@
 import esbuild from 'esbuild';
+import { globalExternals } from '@fal-works/esbuild-plugin-global-externals';
 import path from 'path';
 import type { Plugin } from 'replugged/src/types/addon';
 import fs from 'fs';
@@ -31,7 +32,8 @@ if ('renderer' in manifest) {
       platform: 'browser',
       target: `chrome${CHROME_VERSION}`,
       outfile: 'dist/renderer.js',
-      format: 'esm' as esbuild.Format
+      format: 'esm' as esbuild.Format,
+      plugins: [globalExternals({ replugged: 'replugged' })]
     })
   );
 

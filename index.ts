@@ -1,3 +1,5 @@
+import replugged from 'replugged';
+
 export async function start () {
   // @ts-expect-error Not a global yet
   // eslint-disable-next-line no-undef

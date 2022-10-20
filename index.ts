@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type _ from 'replugged/src/globals';
-
 export async function start () {
   // @ts-expect-error Not a global yet
   // eslint-disable-next-line no-undef

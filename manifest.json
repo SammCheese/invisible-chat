@@ -3,9 +3,9 @@
     "name": "Plugin Template",
     "description": "A plugin template",
     "author": {
-        "name": "",
-        "discord_id": "",
-        "github": ""
+        "name": "replugged",
+        "discord_id": "1000992611840049192",
+        "github": "replugged-org"
     },
     "version": "1.0.0",
     "license": "MIT",

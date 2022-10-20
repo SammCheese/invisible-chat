@@ -19,7 +19,7 @@
     "esbuild": "^0.15.11",
     "eslint": "^8.25.0",
     "eslint-plugin-react": "^7.31.10",
-    "replugged": "^4.0.0-beta0",
+    "replugged": "4.0.0-beta0.1",
     "tsx": "^3.10.3",
     "typescript": "^4.8.4"
   }

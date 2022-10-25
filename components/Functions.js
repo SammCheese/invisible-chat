@@ -26,12 +26,12 @@ exports.getSetting = (setting, defaultValue) => {
 
 exports.fetchEmbed = async (url) => {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  const timeout = setTimeout(() => controller.abort(), 7000);
 
   const options = {
     signal: controller.signal,
     method: "POST",
-    mode: 'cors',
+
     headers: {
       'Content-Type': 'application/json'
     },
@@ -91,26 +91,27 @@ exports.doEmbed = async (messageId, ChannelId, content, url) => {
   };
   
   if (url) {
-    try {
-      attachment = await this.fetchEmbed(url);
-      console.log(attachment)
-      attachment.footer = {
-        text: "Made with ❤️ by c0dine and Sammy!"
-      }
-    } catch (e) {
-      if (url.match(/[=|\.](jpeg|jpg|gif|png|webp)/) && !attachment) {
-        const res = await this.fetchEmbedOld(url);
-        embed.image = {
-          url,
-          width: res.width,
-          height: res.height
-        }
+    attachment = await this.fetchEmbed(url);
+    if (!attachment && url.match(/[=|\.](jpeg|jpg|gif|png|webp)/)) {
+      const res = await this.fetchEmbedOld(url);
+      embed.image = {
+        url,
+        width: res.width,
+        height: res.height
       }
     }
   }
   
-  message.embeds.push(embed)
-  if (attachment) message.embeds.push(attachment);
+  // Add the initial Decryption Embed
+  message.embeds.push(embed);
+
+  if (attachment) {
+    attachment.footer = {
+      text: "Made with ❤️ by c0dine and Sammy!"
+    };
+    message.embeds.push(attachment);
+  }
+
   message.embeds = message.embeds.map(embed => this.cleanupEmbed(embed));
   this.updateMessage(message)
 }

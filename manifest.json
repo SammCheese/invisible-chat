@@ -9,6 +9,6 @@
   },
   "version": "1.0.0",
   "license": "MIT",
-  "type": "plugin",
+  "type": "replugged-plugin",
   "renderer": "index.ts"
 }

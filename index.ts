@@ -1,7 +1,7 @@
-import { webpack, injector } from 'replugged';
+import { webpack, Injector } from 'replugged';
 import { AnyFunction } from 'replugged/src/types/util';
 
-const inject = new injector.MiniInjector();
+const inject = new Injector();
 
 export async function start () {
   const typingMod = await webpack.waitForModule(webpack.filters.byProps('startTyping')) as {

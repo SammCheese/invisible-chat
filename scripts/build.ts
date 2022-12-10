@@ -12,11 +12,11 @@ const CHROME_VERSION = '91';
 
 const globalModules = {
   replugged: {
-    varName: "replugged",
-    namedExports: ["injector", "webpack", "notices", "commands", "settings", "quickCSS", "themes", "ignition", "plugins"],
+    varName: 'replugged',
+    namedExports: [ 'Injector', 'webpack', 'notices', 'commands', 'settings', 'quickCSS', 'themes', 'ignition', 'plugins' ],
     defaultExport: true
   }
-}
+};
 
 const watch = process.argv.includes('--watch');
 
@@ -41,7 +41,7 @@ if ('renderer' in manifest) {
       target: `chrome${CHROME_VERSION}`,
       outfile: 'dist/renderer.js',
       format: 'esm' as esbuild.Format,
-      plugins: [globalExternals(globalModules)]
+      plugins: [ globalExternals(globalModules) ]
     })
   );
 

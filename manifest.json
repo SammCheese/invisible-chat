@@ -10,11 +10,5 @@
   "version": "1.0.0",
   "license": "MIT",
   "type": "plugin",
-  "renderer": "index.ts",
-  "dependencies": {
-    "required": [
-      "dev.replugged.lifecycle.WebpackReady",
-      "dev.replugged.lifecycle.WebpackStart"
-    ]
-  }
+  "renderer": "index.ts"
 }

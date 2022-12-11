@@ -2,7 +2,7 @@ import esbuild from 'esbuild';
 import {globalExternals} from '@fal-works/esbuild-plugin-global-externals';
 import path, {join} from 'path';
 import type {Plugin} from 'replugged/src/types/addon';
-import fs from 'fs';
+import fs, {existsSync, rmSync} from 'fs';
 import _manifest from '../manifest.json';
 
 const manifest: Plugin = _manifest;
@@ -32,35 +32,41 @@ const REPLUGGED_FOLDER_NAME = 'replugged';
 export const CONFIG_PATH = (() => {
 	switch (process.platform) {
 		case 'win32':
-			return join(
-				process.env.APPDATA || '',
-				REPLUGGED_FOLDER_NAME,
-				'plugins',
-			);
+			return join(process.env.APPDATA || '', REPLUGGED_FOLDER_NAME);
 		case 'darwin':
 			return join(
 				process.env.HOME || '',
 				'Library',
 				'Application Support',
 				REPLUGGED_FOLDER_NAME,
-				'plugins',
 			);
 		default:
 			if (process.env.XDG_CONFIG_HOME) {
-				return join(
-					process.env.XDG_CONFIG_HOME,
-					REPLUGGED_FOLDER_NAME,
-					'plugins',
-				);
+				return join(process.env.XDG_CONFIG_HOME, REPLUGGED_FOLDER_NAME);
 			}
 			return join(
 				process.env.HOME || '',
 				'.config',
 				REPLUGGED_FOLDER_NAME,
-				'plugins',
 			);
 	}
 })();
+
+const install: esbuild.Plugin = {
+	name: 'install',
+	setup: build => {
+		build.onEnd(() => {
+			if (!process.env.NO_INSTALL) {
+				const dest = join(CONFIG_PATH, 'plugins', manifest.id);
+				if (existsSync(dest)) {
+					rmSync(dest, {recursive: true});
+				}
+				fs.cpSync('dist', dest, {recursive: true});
+				console.log('Installed updated version');
+			}
+		});
+	},
+};
 
 const watch = process.argv.includes('--watch');
 
@@ -72,6 +78,7 @@ const common: esbuild.BuildOptions = {
 	format: 'cjs' as esbuild.Format,
 	logLevel: 'info',
 	watch,
+	plugins: [install],
 };
 
 const targets = [];
@@ -85,7 +92,7 @@ if ('renderer' in manifest) {
 			target: `chrome${CHROME_VERSION}`,
 			outfile: 'dist/renderer.js',
 			format: 'esm' as esbuild.Format,
-			plugins: [globalExternals(globalModules)],
+			plugins: [globalExternals(globalModules), install],
 		}),
 	);
 

@@ -1,5 +1,5 @@
 import {Injector, webpack} from 'replugged';
-import {AnyFunction} from 'replugged/src/types/util';
+import {AnyFunction} from 'replugged/dist/types/util';
 
 const inject = new Injector();
 

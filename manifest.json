@@ -10,5 +10,5 @@
   "version": "1.0.0",
   "license": "MIT",
   "type": "replugged-plugin",
-  "renderer": "index.ts"
+  "renderer": "src/index.ts"
 }

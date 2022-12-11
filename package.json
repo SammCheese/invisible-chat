@@ -2,10 +2,19 @@
   "name": "plugin-template",
   "version": "1.0.0",
   "description": "A plugin template",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "scripts": {
     "build": "tsx scripts/build.ts",
     "watch": "tsx scripts/build.ts --watch",
-    "bundle": "asar p dist bundled.asar"
+    "bundle": "asar p dist bundled.asar",
+    "prettier:check": "prettier ./src ./scripts --check",
+    "eslint:check": "eslint ./src ./scripts",
+    "prettier:fix": "prettier ./src ./scripts --write",
+    "eslint:fix": "eslint ./src ./scripts --fix",
+    "lint": "pnpm run prettier:check && pnpm run eslint:check && pnpm run check",
+    "lint:fix": "pnpm run prettier:fix && pnpm run eslint:fix"
   },
   "keywords": [],
   "author": "",
@@ -18,8 +27,11 @@
     "@typescript-eslint/parser": "^5.40.1",
     "esbuild": "^0.15.11",
     "eslint": "^8.25.0",
+    "eslint-config-dmitmel": "github:dmitmel/eslint-config-dmitmel",
+    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-react": "^7.31.10",
-    "replugged": "4.0.0-beta0.3",
+    "prettier": "^2.8.1",
+    "replugged": "4.0.0-beta0.4",
     "tsx": "^3.10.3",
     "typescript": "^4.8.4"
   }

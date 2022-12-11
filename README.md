@@ -27,6 +27,8 @@ If you don't want to install the updated version, set the `NO_INSTALL` environme
 
 You can format the code by running `pnpm run lint:fix`. The repository includes VSCode settings to automatically format on save.
 
+API docs coming soon(tm)
+
 ## Distribution
 
 You can compile a packed `.asar` file for distribution with `pnpm run build-and-bundle`. This can be installed to the same plugin folder as listed above.

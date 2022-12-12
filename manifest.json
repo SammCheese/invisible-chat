@@ -8,6 +8,10 @@
     "github": "replugged-org"
   },
   "version": "1.0.0",
+  "updater": {
+    "type": "github",
+    "id": "replugged-org/plugin-template"
+  },
   "license": "MIT",
   "type": "replugged-plugin",
   "renderer": "src/index.ts"

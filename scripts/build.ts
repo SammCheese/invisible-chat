@@ -1,9 +1,9 @@
 import esbuild from 'esbuild';
 import {globalExternals} from '@fal-works/esbuild-plugin-global-externals';
 import path, {join} from 'path';
-import type {Plugin} from 'replugged/src/types/addon';
 import fs, {existsSync, rmSync} from 'fs';
 import _manifest from '../manifest.json';
+import {Plugin} from 'replugged/dist/types/addon';
 
 const manifest: Plugin = _manifest;
 

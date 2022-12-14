@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsx scripts/build.ts",
     "watch": "tsx scripts/build.ts --watch",
-    "bundle": "asar p dist bundled.asar",
+    "bundle": "tsx scripts/bundle.ts",
     "build-and-bundle": "NO_INSTALL=true pnpm run build && pnpm run bundle",
     "check": "tsc --noEmit",
     "prettier:check": "prettier ./src ./scripts --check",

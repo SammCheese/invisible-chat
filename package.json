@@ -10,6 +10,7 @@
     "watch": "tsx scripts/build.ts --watch",
     "bundle": "asar p dist bundled.asar",
     "build-and-bundle": "NO_INSTALL=true pnpm run build && pnpm run bundle",
+    "check": "tsc --noEmit",
     "prettier:check": "prettier ./src ./scripts --check",
     "eslint:check": "eslint ./src ./scripts",
     "prettier:fix": "prettier ./src ./scripts --write",

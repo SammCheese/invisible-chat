@@ -7,7 +7,7 @@
     "discordID": "1000992611840049192",
     "github": "replugged-org"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "updater": {
     "type": "github",
     "id": "replugged-org/plugin-template"

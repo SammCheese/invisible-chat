@@ -1,21 +1,20 @@
 import { Injector, webpack } from "replugged";
-import { AnyFunction } from "replugged/dist/types/util";
 
 const inject = new Injector();
 
 export async function start(): Promise<void> {
-  const typingMod = (await webpack.waitForModule(webpack.filters.byProps("startTyping"))) as {
-    startTyping: AnyFunction;
-  };
-  const getChannelMod = (await webpack.waitForModule(webpack.filters.byProps("getChannel"))) as {
+  const typingMod = await webpack.waitForModule<{
+    startTyping: (channelId: string) => void;
+  }>(webpack.filters.byProps("startTyping"));
+  const getChannelMod = await webpack.waitForModule<{
     getChannel: (id: string) => {
       name: string;
     };
-  };
+  }>(webpack.filters.byProps("getChannel"));
 
   if (typingMod && getChannelMod) {
     inject.instead(typingMod, "startTyping", ([channel]) => {
-      const channelObj = getChannelMod.getChannel(channel as string);
+      const channelObj = getChannelMod.getChannel(channel);
       console.log(`Typing prevented! Channel: #${channelObj?.name ?? "unknown"} (${channel}).`);
     });
   }

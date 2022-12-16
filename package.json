@@ -33,7 +33,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-react": "^7.31.10",
     "prettier": "^2.8.1",
-    "replugged": "4.0.0-beta0.13",
+    "replugged": "4.0.0-beta0.15",
     "tsx": "^3.10.3",
     "typescript": "^4.8.4"
   }

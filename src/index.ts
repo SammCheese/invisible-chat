@@ -111,17 +111,19 @@ function updateMessage(message: OutgoingMessage): void {
 }
 
 function injectSendMessages(): Promise<void> {
-  inject.before(webpack.common.messages, "sendMessage", (args: OutgoingMessage[]) => {
+  // @ts-expect-error Type Mismatch
+  inject.before(webpack.common.messages, "sendMessage", async (args: OutgoingMessage[]) => {
     if (activeHotkey) {
       try {
         const { content } = args[1];
         const cover = content.match(/(.{0,2000})\*.{0,2000}\*/)![1];
         const hidden = content.match(/\*.{0,2000}\*/)![0].replaceAll("*", "");
         const pw =
-          settings.get("dev.sammcheese.InvisibleChat").get("defaultPassword") ?? "password";
+          (await settings.get("dev.sammcheese.InvisibleChat").get("defaultPassword")) ?? "password";
 
         args[1].content = steggo.hide(hidden, pw, cover);
-      } catch {
+      } catch (e) {
+        console.log(e);
         // DO NOT SEND THE UNENCRYPTED MESSAGE UNDER ANY CIRCUMSTANCE
         args[1].content = "";
       }

@@ -1,25 +1,71 @@
-import { Injector, webpack } from "replugged";
+import { Injector, settings, webpack } from "replugged";
+import StegCloak from "./lib/stegcloak.js";
 
 const inject = new Injector();
 
-export async function start(): Promise<void> {
-  const typingMod = await webpack.waitForModule<{
-    startTyping: (channelId: string) => void;
-  }>(webpack.filters.byProps("startTyping"));
-  const getChannelMod = await webpack.waitForModule<{
-    getChannel: (id: string) => {
-      name: string;
-    };
-  }>(webpack.filters.byProps("getChannel"));
+interface StegCloak {
+  hide: (secret: string, password: string, cover: string) => Promise<string>;
+  reveal: (secret: string, password: string) => Promise<string>;
+}
 
-  if (typingMod && getChannelMod) {
-    inject.instead(typingMod, "startTyping", ([channel]) => {
-      const channelObj = getChannelMod.getChannel(channel);
-      console.log(`Typing prevented! Channel: #${channelObj?.name ?? "unknown"} (${channel}).`);
-    });
+const steggo: StegCloak = new StegCloak(true, false);
+
+const INV_DETECTION = new RegExp(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/);
+
+let activeHotkey = false;
+
+function keypress(e: KeyboardEvent): void {
+  if (e.ctrlKey && e.key === "j") {
+    activeHotkey = !activeHotkey;
+    const bar = document.querySelector(".scrollableContainer-15eg7h.webkit-QgSAqd");
+    if (activeHotkey) {
+      bar.style.border = "1px solid";
+      bar.style.borderColor = "#09FFFF";
+    } else {
+      bar.style.border = "";
+      bar.style.borderColor = "";
+    }
   }
+}
+
+export async function start(): Promise<void> {
+  console.log("%c [Invisible Chat] Started!", "color: aquamarine");
+  document.addEventListener("keypress", keypress);
+
+  //settings.get('dev.sammcheese.InvisibleChat')
+
+  await injectSendMessages();
+  await injectReceivingMessages();
+}
+
+async function injectReceivingMessages(): Promise<void> {
+  inject.after(webpack.common.messages, "receiveMessage", (args, res) => {
+    console.log(args, res);
+  });
+}
+
+async function injectSendMessages(): Promise<void> {
+  inject.before(webpack.common.messages, "sendMessage", async (args: unknown[]) => {
+    if (activeHotkey) {
+      try {
+        const { content } = args[1];
+        const cover = content.match(/(.{0,2000})\*.{0,2000}\*/)[1];
+        const hidden = content.match(/\*.{0,2000}\*/)[0].replaceAll("*", "");
+        const pw =
+          settings.get("dev.sammcheese.InvisibleChat").get("defaultPassword") ?? "password";
+
+        args[1].content = await steggo.hide(hidden, pw, cover);
+      } catch {
+        // DO NOT SEND THE UNENCRYPTED MESSAGE UNDER ANY CIRCUMSTANCE
+        args[1].content = "";
+        return false;
+      }
+    }
+    return args;
+  });
 }
 
 export function stop(): void {
   inject.uninjectAll();
+  document.removeEventListener("keypress", keypress);
 }

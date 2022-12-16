@@ -1,16 +1,16 @@
 {
-  "id": "dev.replugged.PluginTemplate",
-  "name": "Plugin Template",
-  "description": "A plugin template",
+  "id": "dev.sammcheese.InvisibleChat",
+  "name": "Invisible Chat",
+  "description": "Encrypt your Messages!",
   "author": {
-    "name": "replugged",
-    "discordID": "1000992611840049192",
-    "github": "replugged-org"
+    "name": "Samm-Cheese",
+    "discordID": "372148345894076416",
+    "github": "SammCheese"
   },
-  "version": "1.0.2",
+  "version": "1.0.0",
   "updater": {
     "type": "github",
-    "id": "replugged-org/plugin-template"
+    "id": "SammCheese/invisible-chat"
   },
   "license": "MIT",
   "type": "replugged-plugin",

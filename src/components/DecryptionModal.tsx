@@ -21,7 +21,7 @@ setTimeout(() => {
 
 export function buildDecModal(msg: any) {
   let secret: string = msg?.content;
-  let password: string;
+  let password: string = "password";
   if (!TextInput || !Button) return;
   if (!ModalRoot || !ModalContent || !ModalHeader || !ModalFooter) return;
   const s = openModal!((props = msg) => (

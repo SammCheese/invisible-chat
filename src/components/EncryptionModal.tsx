@@ -22,9 +22,19 @@ setTimeout(() => {
 export function buildEncModal() {
   let secret: string;
   let cover: string;
-  let password: string;
+  let password: string = "password";
+  let valid: boolean = false;
   if (!TextInput || !Button) return;
   if (!ModalRoot || !ModalContent || !ModalHeader || !ModalFooter) return;
+
+  function isValid() {
+    if (secret && cover && cover.match(/\w \w/)) {
+      valid = true;
+    } else {
+      valid = false;
+    } // Enforcing the 2 words, space is NOT a valid thing
+  }
+
   const s = openModal!((props) => (
     <ModalRoot {...props} size={ModalSize.MEDIUM}>
       <ModalHeader>
@@ -35,21 +45,27 @@ export function buildEncModal() {
         <TextInput
           onChange={(e: string) => {
             secret = e;
+            isValid();
           }}></TextInput>
-        <div style={{ color: "gray" }}>Cover</div>
+        <div style={{ color: "gray" }}>Cover (2 or more Words!!)</div>
         <TextInput
           onChange={(e: string) => {
             cover = e;
+            isValid();
           }}></TextInput>
         <div style={{ color: "gray" }}>Password</div>
         <TextInput
+          defaultValue={"password"}
           onChange={(e: string) => {
+            isValid();
             password = e;
           }}></TextInput>
       </ModalContent>
       <ModalFooter>
         <Button
           onClick={() => {
+            if (!valid) return;
+
             const toSend = encrypt(secret, password, cover);
             if (!toSend) return;
 

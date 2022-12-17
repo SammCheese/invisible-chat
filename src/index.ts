@@ -1,28 +1,32 @@
-import { Injector, OutgoingMessage, settings, webpack } from "replugged";
+import { Injector, OutgoingMessage, webpack } from "replugged";
 
 import StegCloak from "./lib/stegcloak.js";
 import { popoverIcon } from "./assets/popoverIcon";
+import { chatbarLock } from "./assets/chatbarLock";
+
+import { buildDecModal } from "./components/DecryptionModal";
 
 const inject = new Injector();
+const steggo: StegCloak = new StegCloak(true, false);
 
-interface IncomingMessage extends OutgoingMessage {
-  embeds: unknown[];
-  canPin: undefined | boolean;
-}
 interface StegCloak {
   hide: (secret: string, password: unknown, cover: string) => string;
   reveal: (secret: string, password: unknown) => string;
 }
+interface IncomingMessage extends OutgoingMessage {
+  embeds: unknown[];
+  canPin: undefined | boolean;
+}
 
-let activeHotkey = false;
-const steggo: StegCloak = new StegCloak(true, false);
+const EMBED_URL = "https://embed.sammcheese.net";
 const INV_DETECTION = new RegExp(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/);
+const URL_DETECTION = new RegExp(
+  /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/,
+);
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function start(): Promise<void> {
   console.log("%c [Invisible Chat] Started!", "color: aquamarine");
-  document.addEventListener("keypress", keypress);
-
-  await injectSendMessages();
 
   // Register the Message Receiver
   // @ts-expect-error We are adding to Window
@@ -30,26 +34,8 @@ export async function start(): Promise<void> {
     popoverIcon,
     INV_DETECTION,
     receiver,
+    chatbarLock,
   };
-}
-
-function keypress(e: KeyboardEvent): void {
-  if (e.ctrlKey && e.key === "j") {
-    activeHotkey = !activeHotkey;
-    const bar: HTMLElement | null = document.querySelector(
-      ".scrollableContainer-15eg7h.webkit-QgSAqd",
-    );
-
-    if (!bar) return;
-
-    if (activeHotkey) {
-      bar.style.border = "1px solid";
-      bar.style.borderColor = "#09FFFF";
-    } else {
-      bar.style.border = "";
-      bar.style.borderColor = "";
-    }
-  }
 }
 
 export function runPlaintextPatches(): void {
@@ -57,13 +43,21 @@ export function runPlaintextPatches(): void {
     {
       replacements: [
         {
+          // Minipopover Lock
           match:
             /.\?(..)\(\{key:"reply",label:.{1,40},icon:.{1,40},channel:(.{1,3}),message:(.{1,3}),onClick:.{1,5}\}\):null/gm,
           replace: `$&,$3.content.match(window.invisiblechat.INV_DETECTION)?$1({key:"decrypt",label:"Decrypt Message",icon:window.invisiblechat.popoverIcon,channel:$2,message:$3,onClick:()=>window.invisiblechat.receiver($3)}):null`,
         },
         {
+          // Detection Lock
+          // TODO: Find a better way that doesnt need hovering over the message
           match: /var .=(.)\.channel,.=.\.message,.=.\.expanded,.=.\.canCopy/gm,
-          replace: `window.invisiblechat.receiver($1.message);$&`,
+          replace: `window.invisiblechat.receiver($1.message, $1.canPin);$&`,
+        },
+        {
+          // Chatbar Lock
+          match: /.=.\.activeCommand,.=.\.activeCommandOption,(.)=\[\];/,
+          replace: "$&;$1.push(window.invisiblechat.chatbarLock);",
         },
       ],
     },
@@ -72,21 +66,40 @@ export function runPlaintextPatches(): void {
 
 // Grab the data from the above Plantext Patches
 function receiver(message: IncomingMessage, canPin: boolean | undefined): void {
-  if (typeof canPin === "undefined") {
+  if (typeof canPin !== "undefined") {
     if (message.content.match(INV_DETECTION) && !message.content.includes("🔒")) {
       message.content = `🔒${message.content}🔒`;
     }
   } else {
-    void buildEmbed(message);
+    buildDecModal(message);
   }
 }
 
-async function buildEmbed(message: IncomingMessage): Promise<void> {
-  const password =
-    (await settings.get("dev.sammcheese.InvisibleChat").get("defaultPassword")) ?? "password";
+// Gets the Embed of a Link
+async function getEmbed(url: URL): Promise<JSON> {
+  const controller = new AbortController();
+  const _timeout = setTimeout(() => controller.abort(), 5000);
 
-  // eslint-disable-next-line no-irregular-whitespace
-  const revealed = steggo.reveal(message.content.replace("​", ""), password);
+  const options = {
+    signal: controller.signal,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      url,
+    }),
+  };
+
+  const rawRes = await fetch(EMBED_URL, options);
+  return await rawRes.json();
+}
+
+export async function buildEmbed(message: IncomingMessage, revealed: string): Promise<void> {
+  const urlCheck = revealed.match(URL_DETECTION) || [];
+
+  let attachment;
+  if (urlCheck[0]) attachment = await getEmbed(new URL(urlCheck[0]));
 
   let embed = {
     type: "rich",
@@ -99,6 +112,7 @@ async function buildEmbed(message: IncomingMessage): Promise<void> {
   };
 
   message.embeds.push(embed);
+  if (attachment) message.embeds.push(attachment);
   updateMessage(message);
   return Promise.resolve();
 }
@@ -110,30 +124,15 @@ function updateMessage(message: OutgoingMessage): void {
   });
 }
 
-function injectSendMessages(): Promise<void> {
-  // @ts-expect-error Type Mismatch
-  inject.before(webpack.common.messages, "sendMessage", async (args: OutgoingMessage[]) => {
-    if (activeHotkey) {
-      try {
-        const { content } = args[1];
-        const cover = content.match(/(.{0,2000})\*.{0,2000}\*/)![1];
-        const hidden = content.match(/\*.{0,2000}\*/)![0].replaceAll("*", "");
-        const pw =
-          (await settings.get("dev.sammcheese.InvisibleChat").get("defaultPassword")) ?? "password";
-
-        args[1].content = steggo.hide(hidden, pw, cover);
-      } catch (e) {
-        console.log(e);
-        // DO NOT SEND THE UNENCRYPTED MESSAGE UNDER ANY CIRCUMSTANCE
-        args[1].content = "";
-      }
-    }
-    return args;
-  });
-  return Promise.resolve();
-}
-
 export function stop(): void {
   inject.uninjectAll();
-  document.removeEventListener("keypress", keypress);
+}
+
+export function encrypt(secret: string, password: string, cover: string): string {
+  return steggo.hide(secret, password, cover);
+}
+
+export function decrypt(secret: string, password: string): string {
+  // eslint-disable-next-line no-irregular-whitespace
+  return steggo.reveal(secret, password).replace("​", "");
 }

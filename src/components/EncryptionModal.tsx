@@ -17,12 +17,14 @@ let Button: any;
 setTimeout(() => {
   TextInput = webpack.getByProps(["defaultProps", "Sizes", "contextType"]);
   Button = webpack.getByProps(["Hovers", "Looks", "Sizes"]);
-}, 1500);
+}, 3500);
 
 export function buildEncModal() {
   let secret: string;
   let cover: string;
   let password: string;
+  if (!TextInput || !Button) return;
+  if (!ModalRoot || !ModalContent || !ModalHeader || !ModalFooter) return;
   const s = openModal!((props) => (
     <ModalRoot {...props} size={ModalSize.MEDIUM}>
       <ModalHeader>

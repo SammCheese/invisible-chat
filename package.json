@@ -1,6 +1,6 @@
 {
-  "name": "Invisible Chat",
-  "version": "1.0.0",
+  "name": "invisible-chat",
+  "version": "1.0.1",
   "description": "Encrypt your Discord Messages",
   "engines": {
     "node": ">=14.0.0"

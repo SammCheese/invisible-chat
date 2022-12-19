@@ -1,10 +1,11 @@
 import { Injector, OutgoingMessage, webpack } from "replugged";
 
-import StegCloak from "./lib/stegcloak.js";
 import { popoverIcon } from "./assets/popoverIcon";
 import { chatbarLock } from "./assets/chatbarLock";
+import { Indicator } from "./assets/indicator";
 
 import { buildDecModal } from "./components/DecryptionModal";
+import StegCloak from "./lib/stegcloak.js";
 
 const inject = new Injector();
 const steggo: StegCloak = new StegCloak(true, false);
@@ -35,6 +36,7 @@ export async function start(): Promise<void> {
     INV_DETECTION,
     receiver,
     chatbarLock,
+    Indicator,
   };
 }
 
@@ -49,15 +51,15 @@ export function runPlaintextPatches(): void {
           replace: `$&,$3.content.match(window.invisiblechat.INV_DETECTION)?$1({key:"decrypt",label:"Decrypt Message",icon:window.invisiblechat.popoverIcon,channel:$2,message:$3,onClick:()=>window.invisiblechat.receiver($3)}):null`,
         },
         {
-          // Detection Lock
-          // TODO: Find a better way that doesnt need hovering over the message
-          match: /var .=(.)\.channel,.=.\.message,.=.\.expanded,.=.\.canCopy/gm,
-          replace: `window.invisiblechat.receiver($1.message, $1.canPin);$&`,
-        },
-        {
           // Chatbar Lock
           match: /.=.\.activeCommand,.=.\.activeCommandOption,(.)=\[\];/,
           replace: "$&;$1.push(window.invisiblechat.chatbarLock);",
+        },
+        {
+          // Message Indicator
+          match: /var .,.,.=(.)\.className,.=.\.message,.=.\.children,.=.\.content,.=.\.onUpdate/,
+          replace:
+            "try{$1?.content[0].match(window.invisiblechat.INV_DETECTION)?$1?.content.push(window.invisiblechat.Indicator):null}catch(e){};$&",
         },
       ],
     },
@@ -65,14 +67,8 @@ export function runPlaintextPatches(): void {
 }
 
 // Grab the data from the above Plantext Patches
-function receiver(message: IncomingMessage, canPin: boolean | undefined): void {
-  if (typeof canPin !== "undefined") {
-    if (message.content.match(INV_DETECTION) && !message.content.includes("🔒")) {
-      message.content = `🔒${message.content}🔒`;
-    }
-  } else {
-    buildDecModal(message);
-  }
+function receiver(message: IncomingMessage): void {
+  buildDecModal(message);
 }
 
 // Gets the Embed of a Link
@@ -133,6 +129,7 @@ export function encrypt(secret: string, password: string, cover: string): string
 }
 
 export function decrypt(secret: string, password: string): string {
+  // Remove the Indicator when revealing
   // eslint-disable-next-line no-irregular-whitespace
   return steggo.reveal(secret, password).replace("​", "");
 }

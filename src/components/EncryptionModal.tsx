@@ -71,7 +71,9 @@ export function buildEncModal() {
 
             webpack.common.messages.sendMessage(
               webpack.common.channels.getCurrentlySelectedChannelId(),
-              { content: toSend },
+              // Adds an indicator (\u200b)
+              // eslint-disable-next-line no-irregular-whitespace
+              { content: `${toSend}​` },
             );
             // @ts-ignore
             closeModal(s);

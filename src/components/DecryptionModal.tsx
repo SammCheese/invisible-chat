@@ -1,5 +1,4 @@
-import React from "react";
-import { webpack } from "replugged";
+import { common, webpack } from "replugged";
 import {
   ModalContent,
   ModalFooter,
@@ -11,6 +10,7 @@ import {
 } from "./Modals";
 
 import { buildEmbed, decrypt } from "../index";
+const { React } = common;
 
 let TextInput: any;
 let Button: any;
@@ -34,6 +34,7 @@ export function buildDecModal(msg: any) {
         <TextInput defaultValue={msg.content} disabled={true}></TextInput>
         <div style={{ color: "gray" }}>Password</div>
         <TextInput
+          defaultValue={"password"}
           onChange={(e: string) => {
             password = e;
           }}></TextInput>

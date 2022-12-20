@@ -1,5 +1,4 @@
-import React from "react";
-import { webpack } from "replugged";
+import { webpack, common } from "replugged";
 import {
   ModalContent,
   ModalFooter,
@@ -11,6 +10,8 @@ import {
 } from "./Modals";
 
 import { encrypt } from "../index";
+
+const { React } = common;
 
 let TextInput: any;
 let Button: any;
@@ -65,16 +66,15 @@ export function buildEncModal() {
         <Button
           onClick={() => {
             if (!valid) return;
-
-            const toSend = encrypt(secret, password, cover);
+            // Adds an indicator (\u200b) after secret
+            // eslint-disable-next-line no-irregular-whitespace
+            const toSend = encrypt(`${secret}​`, password, cover);
             if (!toSend) return;
 
-            webpack.common.messages.sendMessage(
-              webpack.common.channels.getCurrentlySelectedChannelId(),
-              // Adds an indicator (\u200b)
-              // eslint-disable-next-line no-irregular-whitespace
-              { content: `${toSend}​` },
-            );
+            // @ts-expect-error
+            common.messages.sendMessage(common.channels.getCurrentlySelectedChannelId(), {
+              content: `${toSend}`,
+            });
             // @ts-ignore
             closeModal(s);
           }}>

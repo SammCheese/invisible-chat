@@ -1,4 +1,4 @@
-import { Injector, OutgoingMessage, webpack } from "replugged";
+import { Injector, common } from "replugged";
 
 import { popoverIcon } from "./assets/popoverIcon";
 import { chatbarLock } from "./assets/chatbarLock";
@@ -13,10 +13,6 @@ const steggo: StegCloak = new StegCloak(true, false);
 interface StegCloak {
   hide: (secret: string, password: unknown, cover: string) => string;
   reveal: (secret: string, password: unknown) => string;
-}
-interface IncomingMessage extends OutgoingMessage {
-  embeds: unknown[];
-  canPin: undefined | boolean;
 }
 
 const EMBED_URL = "https://embed.sammcheese.net";
@@ -40,34 +36,8 @@ export async function start(): Promise<void> {
   };
 }
 
-export function runPlaintextPatches(): void {
-  webpack.patchPlaintext([
-    {
-      replacements: [
-        {
-          // Minipopover Lock
-          match:
-            /.\?(..)\(\{key:"reply",label:.{1,40},icon:.{1,40},channel:(.{1,3}),message:(.{1,3}),onClick:.{1,5}\}\):null/gm,
-          replace: `$&,$3.content.match(window.invisiblechat.INV_DETECTION)?$1({key:"decrypt",label:"Decrypt Message",icon:window.invisiblechat.popoverIcon,channel:$2,message:$3,onClick:()=>window.invisiblechat.receiver($3)}):null`,
-        },
-        {
-          // Chatbar Lock
-          match: /.=.\.activeCommand,.=.\.activeCommandOption,(.)=\[\];/,
-          replace: "$&;$1.push(window.invisiblechat.chatbarLock);",
-        },
-        {
-          // Message Indicator
-          match: /var .,.,.=(.)\.className,.=.\.message,.=.\.children,.=.\.content,.=.\.onUpdate/,
-          replace:
-            "try{$1?.content[0].match(window.invisiblechat.INV_DETECTION)?$1?.content.push(window.invisiblechat.Indicator):null}catch(e){};$&",
-        },
-      ],
-    },
-  ]);
-}
-
 // Grab the data from the above Plantext Patches
-function receiver(message: IncomingMessage): void {
+function receiver(message: unknown): void {
   buildDecModal(message);
 }
 
@@ -91,7 +61,7 @@ async function getEmbed(url: URL): Promise<JSON> {
   return await rawRes.json();
 }
 
-export async function buildEmbed(message: IncomingMessage, revealed: string): Promise<void> {
+export async function buildEmbed(message: unknown, revealed: string): Promise<void> {
   const urlCheck = revealed.match(URL_DETECTION) || [];
 
   let attachment;
@@ -107,14 +77,17 @@ export async function buildEmbed(message: IncomingMessage, revealed: string): Pr
     },
   };
 
+  // @ts-expect-error no type
   message.embeds.push(embed);
+  // @ts-expect-error no type
   if (attachment) message.embeds.push(attachment);
   updateMessage(message);
   return Promise.resolve();
 }
 
-function updateMessage(message: OutgoingMessage): void {
-  webpack.common.fluxDispatcher.dispatch({
+function updateMessage(message: unknown): void {
+  // @ts-expect-error no type
+  common.fluxDispatcher.dispatch({
     type: "MESSAGE_UPDATE",
     message,
   });

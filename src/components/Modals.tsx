@@ -3,8 +3,8 @@
 // https://github.com/Vendicated/Vencord
 // https://github.com/Vendicated/Vencord/blob/main/src/utils/modal.tsx
 
-import { webpack } from "replugged";
-import React from "react";
+import { common, webpack } from "replugged";
+const { React } = common;
 
 enum ModalTransitionState {
   ENTERING,

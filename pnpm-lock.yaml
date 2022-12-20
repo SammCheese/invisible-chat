@@ -13,13 +13,9 @@ specifiers:
   eslint-plugin-node: ^11.1.0
   eslint-plugin-react: ^7.31.10
   prettier: ^2.8.1
-  react: ^18.2.0
-  replugged: 4.0.0-beta0.17
+  replugged: 4.0.0-beta0.18
   tsx: ^3.10.3
   typescript: ^4.8.4
-
-dependencies:
-  react: 18.2.0
 
 devDependencies:
   '@electron/asar': 3.2.1
@@ -34,7 +30,7 @@ devDependencies:
   eslint-plugin-node: 11.1.0_eslint@8.25.0
   eslint-plugin-react: 7.31.10_eslint@8.25.0
   prettier: 2.8.1
-  replugged: 4.0.0-beta0.17
+  replugged: 4.0.0-beta0.18
   tsx: 3.10.4
   typescript: 4.8.4
 
@@ -1293,6 +1289,7 @@ packages:
 
   /js-tokens/4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
+    dev: true
 
   /js-yaml/4.1.0:
     resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
@@ -1341,6 +1338,7 @@ packages:
     hasBin: true
     dependencies:
       js-tokens: 4.0.0
+    dev: true
 
   /lru-cache/6.0.0:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
@@ -1534,12 +1532,6 @@ packages:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
     dev: true
 
-  /react/18.2.0:
-    resolution: {integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      loose-envify: 1.4.0
-
   /regexp.prototype.flags/1.4.3:
     resolution: {integrity: sha512-fjggEOO3slI6Wvgjwflkc4NFRCTZAu5CnNfBd5qOMYhWdn67nJBBu34/TkD++eeFmd8C9r9jfXJ27+nSiRkSUA==}
     engines: {node: '>= 0.4'}
@@ -1554,11 +1546,9 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /replugged/4.0.0-beta0.17:
-    resolution: {integrity: sha512-x/9uuEOP6swObrTzLp74NquJnHn99NRInTmL/JG3+itSiwDFVmVObZGcXCq5WXo3Uu/G/1sqoMC+OhrN27+fkQ==}
+  /replugged/4.0.0-beta0.18:
+    resolution: {integrity: sha512-PNUyZAQdcOvkEDsG/8CFTocPjlLQnE0wMZlBDUTNSW+nIP67SpZwAdnu+BAgs6qO6a3z5qk3OGzHTSY1WPZgIQ==}
     engines: {node: '>=14.0.0'}
-    dependencies:
-      react: 18.2.0
     dev: true
 
   /resolve-from/4.0.0:

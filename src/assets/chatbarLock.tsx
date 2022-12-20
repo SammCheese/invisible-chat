@@ -1,5 +1,7 @@
-import React from "react";
+import { common } from "replugged";
 import { buildEncModal } from "../components/EncryptionModal";
+
+const { React } = common;
 
 export const chatbarLock = React.createElement(
   "svg",

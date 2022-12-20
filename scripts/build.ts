@@ -16,6 +16,7 @@ const globalModules = {
     namedExports: [
       "Injector",
       "webpack",
+      "common",
       "notices",
       "commands",
       "settings",
@@ -23,6 +24,7 @@ const globalModules = {
       "themes",
       "ignition",
       "plugins",
+      "util",
     ],
     defaultExport: true,
   },
@@ -118,6 +120,22 @@ if ("main" in manifest) {
   );
 
   manifest.main = "main.js";
+}
+
+if ("plaintextPatches" in manifest) {
+  targets.push(
+    esbuild.build({
+      ...common,
+      entryPoints: [manifest.plaintextPatches],
+      platform: "browser",
+      target: `chrome${CHROME_VERSION}`,
+      outfile: "dist/plaintextPatches.js",
+      format: "esm" as esbuild.Format,
+      plugins: [globalExternals(globalModules), install],
+    }),
+  );
+
+  manifest.plaintextPatches = "plaintextPatches.js";
 }
 
 if (!fs.existsSync("dist")) {

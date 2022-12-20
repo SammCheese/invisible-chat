@@ -1,8 +1,9 @@
-import { webpack, common } from "replugged";
+import { common, webpack } from "replugged";
 import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  ModalProps,
   ModalRoot,
   ModalSize,
   closeModal,
@@ -13,30 +14,30 @@ import { encrypt } from "../index";
 
 const { React } = common;
 
-let TextInput: any;
+const rawTextInput: any = webpack.waitForModule(
+  webpack.filters.byProps("defaultProps", "Sizes", "contextType"),
+);
+
+const rawButton = webpack.waitForModule(webpack.filters.byProps("Hovers", "Looks", "Sizes"));
+
 let Button: any;
-setTimeout(() => {
-  TextInput = webpack.getByProps(["defaultProps", "Sizes", "contextType"]);
-  Button = webpack.getByProps(["Hovers", "Looks", "Sizes"]);
-}, 3500);
+let TextInput: any;
 
-export function buildEncModal() {
-  let secret: string;
-  let cover: string;
-  let password: string = "password";
-  let valid: boolean = false;
-  if (!TextInput || !Button) return;
-  if (!ModalRoot || !ModalContent || !ModalHeader || !ModalFooter) return;
+export async function initEncModal() {
+  TextInput = webpack.getExportsForProps(await rawTextInput, ["contextType"]);
+  Button = webpack.getExportsForProps(await rawButton, ["Link"]);
+}
 
-  function isValid() {
-    if (secret && cover && cover.match(/\w \w/)) {
-      valid = true;
-    } else {
-      valid = false;
-    } // Enforcing the 2 words, space is NOT a valid thing
-  }
+let modalKey: any;
 
-  const s = openModal!((props) => (
+export function EncModal(props: ModalProps) {
+  let [secret, setSecret] = React.useState("");
+  let [cover, setCover] = React.useState("");
+  let [password, setPassword] = React.useState("password");
+
+  const valid = secret && cover && /\w \w/.test(cover);
+
+  return (
     <ModalRoot {...props} size={ModalSize.MEDIUM}>
       <ModalHeader>
         <div style={{ color: "gray", fontSize: "30px" }}>Encrypt Message</div>
@@ -45,30 +46,26 @@ export function buildEncModal() {
         <div style={{ color: "gray" }}>Secret</div>
         <TextInput
           onChange={(e: string) => {
-            secret = e;
-            isValid();
+            setSecret(e);
           }}></TextInput>
         <div style={{ color: "gray" }}>Cover (2 or more Words!!)</div>
         <TextInput
           onChange={(e: string) => {
-            cover = e;
-            isValid();
+            setCover(e);
           }}></TextInput>
         <div style={{ color: "gray" }}>Password</div>
         <TextInput
           defaultValue={"password"}
           onChange={(e: string) => {
-            isValid();
-            password = e;
+            setPassword(e);
           }}></TextInput>
       </ModalContent>
       <ModalFooter>
         <Button
+          disabled={!valid}
           onClick={() => {
             if (!valid) return;
-            // Adds an indicator (\u200b) after secret
-            // eslint-disable-next-line no-irregular-whitespace
-            const toSend = encrypt(`${secret}​`, password, cover);
+            const toSend = encrypt(secret, password, cover);
             if (!toSend) return;
 
             // @ts-expect-error
@@ -76,7 +73,7 @@ export function buildEncModal() {
               content: `${toSend}`,
             });
             // @ts-ignore
-            closeModal(s);
+            closeModal(modalKey);
           }}>
           Send
         </Button>
@@ -84,11 +81,15 @@ export function buildEncModal() {
           style={{ left: 15, position: "absolute" }}
           onClick={() => {
             // @ts-ignore
-            closeModal(s);
+            closeModal(modalKey);
           }}>
           Cancel
         </Button>
       </ModalFooter>
     </ModalRoot>
-  ));
+  );
+}
+
+export function buildEncModal(): any {
+  modalKey = openModal((props) => <EncModal {...props} />);
 }

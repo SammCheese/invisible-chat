@@ -3,8 +3,8 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  ModalProps,
   ModalRoot,
-  ModalSize,
   closeModal,
   openModal,
 } from "./Modals";
@@ -12,41 +12,52 @@ import {
 import { buildEmbed, decrypt } from "../index";
 const { React } = common;
 
-let TextInput: any;
-let Button: any;
-setTimeout(() => {
-  TextInput = webpack.getByProps(["defaultProps", "Sizes", "contextType"]);
-  Button = webpack.getByProps(["Hovers", "Looks", "Sizes"]);
-}, 3500);
+const rawTextInput: any = webpack.waitForModule(
+  webpack.filters.byProps("defaultProps", "Sizes", "contextType"),
+);
 
-export function buildDecModal(msg: any) {
-  let secret: string = msg?.content;
-  let password: string = "password";
-  if (!TextInput || !Button) return;
-  if (!ModalRoot || !ModalContent || !ModalHeader || !ModalFooter) return;
-  const s = openModal!((props = msg) => (
-    <ModalRoot {...props} size={ModalSize.MEDIUM}>
+const rawButton = webpack.waitForModule(webpack.filters.byProps("Hovers", "Looks", "Sizes"));
+
+let Button: any;
+let TextInput: any;
+
+export async function initDecModal() {
+  TextInput = webpack.getExportsForProps(await rawTextInput, ["contextType"]);
+  Button = webpack.getExportsForProps(await rawButton, ["Link"]);
+}
+
+let modalKey: any;
+
+function DecModal(props: ModalProps) {
+  // @ts-ignore
+  let secret: string = props?.message?.content;
+  let [password, setPassword] = React.useState("password");
+
+  return (
+    <ModalRoot {...props}>
       <ModalHeader>
         <div style={{ color: "gray", fontSize: "30px" }}>Decrypt Message</div>
       </ModalHeader>
       <ModalContent>
         <div style={{ color: "gray" }}>Secret</div>
-        <TextInput defaultValue={msg.content} disabled={true}></TextInput>
+        <TextInput defaultValue={secret} disabled={true}></TextInput>
         <div style={{ color: "gray" }}>Password</div>
         <TextInput
           defaultValue={"password"}
           onChange={(e: string) => {
-            password = e;
+            setPassword(e);
           }}></TextInput>
+        <div style={{ marginTop: 10 }} />
       </ModalContent>
       <ModalFooter>
         <Button
           onClick={() => {
             const toSend = decrypt(secret, password);
             if (!toSend) return;
-            buildEmbed(msg, toSend);
             // @ts-ignore
-            closeModal(s);
+            buildEmbed(props?.message, toSend);
+            // @ts-ignore
+            closeModal(modalKey);
           }}>
           Decrypt
         </Button>
@@ -54,11 +65,15 @@ export function buildDecModal(msg: any) {
           style={{ left: 15, position: "absolute" }}
           onClick={() => {
             // @ts-ignore
-            closeModal(s);
+            closeModal(modalKey);
           }}>
           Cancel
         </Button>
       </ModalFooter>
     </ModalRoot>
-  ));
+  );
+}
+
+export function buildDecModal(msg: any): any {
+  modalKey = openModal((props) => <DecModal {...props} {...msg} />);
 }

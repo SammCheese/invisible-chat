@@ -4,8 +4,11 @@ import { popoverIcon } from "./assets/popoverIcon";
 import { chatbarLock } from "./assets/chatbarLock";
 import { Indicator } from "./assets/indicator";
 
-import { buildDecModal } from "./components/DecryptionModal";
+import { buildDecModal, initDecModal } from "./components/DecryptionModal";
+import { initModals } from "./components/Modals";
+
 import StegCloak from "./lib/stegcloak.js";
+import { initEncModal } from "./components/EncryptionModal";
 
 const inject = new Injector();
 const steggo: StegCloak = new StegCloak(true, false);
@@ -21,9 +24,11 @@ const URL_DETECTION = new RegExp(
   /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/,
 );
 
-// eslint-disable-next-line @typescript-eslint/require-await
 export async function start(): Promise<void> {
-  console.log("%c [Invisible Chat] Started!", "color: aquamarine");
+  // Prepare Modals
+  await initModals();
+  await initDecModal();
+  await initEncModal();
 
   // Register the Message Receiver
   // @ts-expect-error We are adding to Window
@@ -34,11 +39,13 @@ export async function start(): Promise<void> {
     chatbarLock,
     Indicator,
   };
+
+  console.log("%c [Invisible Chat] Started!", "color: aquamarine");
 }
 
 // Grab the data from the above Plantext Patches
 function receiver(message: unknown): void {
-  buildDecModal(message);
+  void buildDecModal({ message });
 }
 
 // Gets the Embed of a Link
@@ -98,7 +105,9 @@ export function stop(): void {
 }
 
 export function encrypt(secret: string, password: string, cover: string): string {
-  return steggo.hide(secret, password, cover);
+  // Add Identifier unicode to secret (\u200b)
+  // eslint-disable-next-line no-irregular-whitespace
+  return steggo.hide(`${secret}​`, password, cover);
 }
 
 export function decrypt(secret: string, password: string): string {

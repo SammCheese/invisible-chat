@@ -47,6 +47,7 @@ interface Modals {
 
 interface ModalRootProps {
   transitionState?: ModalTransitionState;
+  /* eslint-disable */
   children: React.ReactNode;
   size?: ModalSize;
   role?: "alertdialog" | "dialog";
@@ -59,46 +60,34 @@ type RenderFunction = (props: ModalProps) => React.ReactNode;
 export let ModalAPI: any;
 export let Modals: Modals;
 
-try {
-  setTimeout(() => {
-    // Populate ModalAPI
-    ModalAPI = {
-      openModal: webpack.getFunctionBySource(
-        "onCloseRequest:null!=",
-        webpack.getBySource("onCloseRequest:null!=")!,
-      ),
-      closeModal: webpack.getFunctionBySource(
-        "onCloseCallback&&",
-        webpack.getBySource("onCloseRequest:null!=")!,
-      ),
-    };
-    // Populate Modal Types
+export async function initModals() {
+  let rawModalModule = webpack.waitForModule(webpack.filters.bySource("onCloseRequest:null!="));
+  let rawModalsModule = webpack.waitForModule(
+    webpack.filters.bySource("().closeWithCircleBackground"),
+  );
 
-    Modals = {
-      ModalRoot: webpack.getFunctionBySource(
-        "().root",
-        webpack.getBySource("().closeWithCircleBackground")!,
-      ),
-      ModalHeader: webpack.getFunctionBySource(
-        "().header",
-        webpack.getBySource("().closeWithCircleBackground")!,
-      ),
-      ModalContent: webpack.getFunctionBySource(
-        "().content",
-        webpack.getBySource("().closeWithCircleBackground")!,
-      ),
-      ModalFooter: webpack.getFunctionBySource(
-        "().footerSeparator",
-        webpack.getBySource("().closeWithCircleBackground")!,
-      ),
-      ModalCloseButton: webpack.getFunctionBySource(
-        "().closeWithCircleBackground",
-        webpack.getBySource("().closeWithCircleBackground")!,
-      ),
-    };
-  }, 1500);
-} catch (e) {
-  console.log(e);
+  ModalAPI = {
+    // @ts-ignore
+    openModal: webpack.getFunctionBySource("onCloseRequest:null!=", await rawModalModule),
+    // @ts-ignore
+    closeModal: webpack.getFunctionBySource("onCloseCallback&&", await rawModalModule),
+  };
+
+  Modals = {
+    // @ts-ignore
+    ModalRoot: webpack.getFunctionBySource("().root", await rawModalsModule),
+    // @ts-ignore
+    ModalHeader: webpack.getFunctionBySource("().header", await rawModalsModule)!,
+    // @ts-ignore
+    ModalContent: webpack.getFunctionBySource("().content", await rawModalsModule)!,
+    // @ts-ignore
+    ModalFooter: webpack.getFunctionBySource("().footerSeparator", await rawModalsModule)!,
+    ModalCloseButton: webpack.getFunctionBySource(
+      "().closeWithCircleBackground",
+      // @ts-ignore
+      await rawModalsModule,
+    )!,
+  };
 }
 
 export const ModalRoot = (props: ModalRootProps) => <Modals.ModalRoot {...props} />;
@@ -111,7 +100,7 @@ export function openModal(
   render: RenderFunction,
   options?: ModalOptions,
   contextKey?: string,
-): void {
+): string {
   return ModalAPI.openModal(render, options, contextKey);
 }
 

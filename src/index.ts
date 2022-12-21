@@ -1,21 +1,27 @@
-import { Injector, common } from "replugged";
+import { common } from "replugged";
 
 import { popoverIcon } from "./assets/popoverIcon";
 import { chatbarLock } from "./assets/chatbarLock";
 import { Indicator } from "./assets/indicator";
 
-import { buildDecModal, initDecModal } from "./components/DecryptionModal";
 import { initModals } from "./components/Modals";
-
-import StegCloak from "./lib/stegcloak.js";
 import { initEncModal } from "./components/EncryptionModal";
+import { buildDecModal, initDecModal } from "./components/DecryptionModal";
 
-const inject = new Injector();
-const steggo: StegCloak = new StegCloak(true, false);
+const getStegCloak: Promise<StegCloakImport> = import(
+  // @ts-expect-error SHUT UP
+  "https://unpkg.com/stegcloak-dist@1.0.0/index.js"
+);
+
+type Constructor<StegCloak> = new (encrypt: boolean, useHmac: boolean) => Promise<StegCloak>;
 
 interface StegCloak {
-  hide: (secret: string, password: unknown, cover: string) => string;
-  reveal: (secret: string, password: unknown) => string;
+  hide: (secret: string, password: string, cover: string) => string;
+  reveal: (secret: string, password: string) => string;
+}
+
+interface StegCloakImport {
+  default: Constructor<StegCloak>;
 }
 
 const EMBED_URL = "https://embed.sammcheese.net";
@@ -24,7 +30,14 @@ const URL_DETECTION = new RegExp(
   /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/,
 );
 
+let StegCloak: Constructor<StegCloak>;
+let steggo: StegCloak;
+
 export async function start(): Promise<void> {
+  // Prepare Lib
+  StegCloak = (await getStegCloak).default;
+  steggo = await new StegCloak(true, false);
+
   // Prepare Modals
   await initModals();
   await initDecModal();
@@ -100,9 +113,7 @@ function updateMessage(message: unknown): void {
   });
 }
 
-export function stop(): void {
-  inject.uninjectAll();
-}
+export function stop(): void {}
 
 export function encrypt(secret: string, password: string, cover: string): string {
   // Add Identifier unicode to secret (\u200b)

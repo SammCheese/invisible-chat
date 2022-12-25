@@ -66,8 +66,8 @@ const watch = process.argv.includes("--watch");
 const common: esbuild.BuildOptions = {
   absWorkingDir: path.join(__dirname, ".."),
   bundle: true,
-  minify: false,
-  sourcemap: true,
+  minify: true,
+  sourcemap: false,
   format: "cjs" as esbuild.Format,
   logLevel: "info",
   watch,

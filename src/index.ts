@@ -13,6 +13,8 @@ const getStegCloak: Promise<StegCloakImport> = import(
   "https://unpkg.com/stegcloak-dist@1.0.0/index.js"
 );
 
+// TYPES
+
 type Constructor<StegCloak> = new (encrypt: boolean, useHmac: boolean) => Promise<StegCloak>;
 
 interface StegCloak {
@@ -23,6 +25,23 @@ interface StegCloak {
 interface StegCloakImport {
   default: Constructor<StegCloak>;
 }
+
+interface DiscordEmbed {
+  title: string;
+  type: string;
+  description: string;
+  url?: string;
+  timestamp?: EpochTimeStamp;
+  color?: number;
+  footer?: object;
+  image?: object;
+  thumbnail?: object;
+  video?: object;
+  provider?: object;
+  author?: object;
+}
+
+// CONSTANTS
 
 const EMBED_URL = "https://embed.sammcheese.net";
 const INV_DETECTION = new RegExp(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/);
@@ -52,8 +71,6 @@ export async function start(): Promise<void> {
     chatbarLock,
     Indicator,
   };
-
-  console.log("%c [Invisible Chat] Started!", "color: aquamarine");
 }
 
 // Grab the data from the above Plantext Patches
@@ -62,7 +79,8 @@ function receiver(message: unknown): void {
 }
 
 // Gets the Embed of a Link
-async function getEmbed(url: URL): Promise<JSON> {
+async function getEmbed(url: URL): Promise<DiscordEmbed> {
+  // Timeout after 5 seconds
   const controller = new AbortController();
   const _timeout = setTimeout(() => controller.abort(), 5000);
 
@@ -84,7 +102,7 @@ async function getEmbed(url: URL): Promise<JSON> {
 export async function buildEmbed(message: unknown, revealed: string): Promise<void> {
   const urlCheck = revealed.match(URL_DETECTION) || [];
 
-  let attachment;
+  let attachment: DiscordEmbed;
   if (urlCheck[0]) attachment = await getEmbed(new URL(urlCheck[0]));
 
   let embed = {

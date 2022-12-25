@@ -3,7 +3,7 @@ const { React } = common;
 
 export const Indicator = (
   <img
-    src="https://cdn-icons-png.flaticon.com/32/3064/3064130.png"
+    src="https://github.com/SammCheese/invisible-chat/raw/NewReplugged/src/assets/lock.png"
     width={20}
     style={{ marginBottom: -4 }}></img>
 );

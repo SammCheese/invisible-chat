@@ -1,95 +1,103 @@
-import { common, webpack } from "replugged";
-import {
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalProps,
-  ModalRoot,
-  ModalSize,
-  closeModal,
-  openModal,
-} from "./Modals";
+import { common, components, webpack } from "replugged";
 
 import { encrypt } from "../index";
 
 const { React } = common;
+// @ts-expect-error Package not updated yet
+const { closeModal, openModal } = common.modal;
+const { Button, SwitchItem, Modal, Divider } = components;
+const FormText = components.FormText.DEFAULT;
 
 const rawTextInput: any = webpack.waitForModule(
   webpack.filters.byProps("defaultProps", "Sizes", "contextType"),
 );
 
-const rawButton = webpack.waitForModule(webpack.filters.byProps("Hovers", "Looks", "Sizes"));
-
-let Button: any;
 let TextInput: any;
 
 export async function initEncModal() {
   TextInput = webpack.getExportsForProps(await rawTextInput, ["contextType"]);
-  Button = webpack.getExportsForProps(await rawButton, ["Link"]);
 }
 
 let modalKey: any;
 
-export function EncModal(props: ModalProps) {
+interface ModalProps {
+  transitionState: any;
+  onClose(): Promise<void>;
+}
+
+function EncModal(props: ModalProps) {
   let [secret, setSecret] = React.useState("");
   let [cover, setCover] = React.useState("");
   let [password, setPassword] = React.useState("password");
+  let [DontUseCover, setDontUseCover] = React.useState(false);
 
-  const valid = secret && cover && /\w \w/.test(cover);
+  const valid = secret && DontUseCover ? true : cover && /\w \w/.test(cover);
 
   return (
-    <ModalRoot {...props} size={ModalSize.MEDIUM}>
-      <ModalHeader>
-        <div style={{ color: "gray", fontSize: "30px" }}>Encrypt Message</div>
-      </ModalHeader>
-      <ModalContent>
-        <div style={{ color: "gray" }}>Secret</div>
+    <Modal.ModalRoot {...props}>
+      <Modal.ModalHeader>
+        <FormText style={{ fontSize: "30px" }}>Encrypt Message</FormText>
+      </Modal.ModalHeader>
+      <Modal.ModalContent>
+        <FormText style={{ marginTop: "10px" }}>Secret Message</FormText>
         <TextInput
           onChange={(e: string) => {
             setSecret(e);
           }}></TextInput>
-        <div style={{ color: "gray" }}>Cover (2 or more Words!!)</div>
+        <FormText style={{ marginTop: "10px" }}>Cover (2 or more Words!!)</FormText>
         <TextInput
+          disabled={DontUseCover}
           onChange={(e: string) => {
             setCover(e);
           }}></TextInput>
-        <div style={{ color: "gray" }}>Password</div>
+        <FormText style={{ marginTop: "10px" }}>Password</FormText>
         <TextInput
           defaultValue={"password"}
           onChange={(e: string) => {
             setPassword(e);
           }}></TextInput>
-      </ModalContent>
-      <ModalFooter>
+        <Divider style={{ marginTop: "10px", marginBottom: "10px" }} />
+        <SwitchItem
+          value={DontUseCover}
+          onChange={(e: boolean) => {
+            console.log(e);
+            setDontUseCover(e);
+          }}>
+          Don't use a cover
+        </SwitchItem>
+      </Modal.ModalContent>
+      <Modal.ModalFooter>
         <Button
+          color={Button.Colors.GREEN}
           disabled={!valid}
           onClick={() => {
             if (!valid) return;
-            const toSend = encrypt(secret, password, cover);
+            const encrypted = encrypt(secret, password, DontUseCover ? "d d" : cover);
+            const toSend = DontUseCover ? encrypted.replaceAll("d", "") : encrypt;
             if (!toSend) return;
 
             // @ts-expect-error
             common.messages.sendMessage(common.channels.getCurrentlySelectedChannelId(), {
               content: `${toSend}`,
             });
-            // @ts-ignore
             closeModal(modalKey);
           }}>
           Send
         </Button>
         <Button
+          color={Button.Colors.TRANSPARENT}
+          look={Button.Looks.LINK}
           style={{ left: 15, position: "absolute" }}
           onClick={() => {
-            // @ts-ignore
             closeModal(modalKey);
           }}>
           Cancel
         </Button>
-      </ModalFooter>
-    </ModalRoot>
+      </Modal.ModalFooter>
+    </Modal.ModalRoot>
   );
 }
 
 export function buildEncModal(): any {
-  modalKey = openModal((props) => <EncModal {...props} />);
+  modalKey = openModal((props: JSX.IntrinsicAttributes & ModalProps) => <EncModal {...props} />);
 }

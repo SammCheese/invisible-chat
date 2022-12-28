@@ -25,6 +25,7 @@ const globalModules = {
       "ignition",
       "plugins",
       "util",
+      "components",
     ],
     defaultExport: true,
   },

@@ -6,7 +6,7 @@ const { React } = common;
 export const chatbarLock = (
   <svg
     key="Encrypt Message"
-    fill="#EBEBEB"
+    fill="var(--header-secondary)"
     width="30"
     height="30"
     viewBox={"0 0 64 64"}

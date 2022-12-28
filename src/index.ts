@@ -1,10 +1,8 @@
 import { common } from "replugged";
 
+import { Indicator } from "./assets/indicator";
 import { popoverIcon } from "./assets/popoverIcon";
 import { chatbarLock } from "./assets/chatbarLock";
-import { Indicator } from "./assets/indicator";
-
-import { initModals } from "./components/Modals";
 import { initEncModal } from "./components/EncryptionModal";
 import { buildDecModal, initDecModal } from "./components/DecryptionModal";
 
@@ -58,7 +56,6 @@ export async function start(): Promise<void> {
   steggo = await new StegCloak(true, false);
 
   // Prepare Modals
-  await initModals();
   await initDecModal();
   await initEncModal();
 
@@ -97,6 +94,18 @@ async function getEmbed(url: URL): Promise<DiscordEmbed> {
 
   const rawRes = await fetch(EMBED_URL, options);
   return await rawRes.json();
+}
+
+export function removeEmbed(message: unknown): void {
+  // @ts-expect-error not typed
+  for (let embed in message.embeds) {
+    // @ts-expect-error not typed
+    if (message.embeds[embed]?.footer?.text.includes("c0dine and Sammy!")) {
+      // @ts-expect-error not typed
+      message.embeds.splice(embed, 1);
+    }
+  }
+  updateMessage(message);
 }
 
 export async function buildEmbed(message: unknown, revealed: string): Promise<void> {

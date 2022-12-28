@@ -1,32 +1,30 @@
-import { common, webpack } from "replugged";
-import {
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalProps,
-  ModalRoot,
-  closeModal,
-  openModal,
-} from "./Modals";
+import { common, components, webpack } from "replugged";
 
 import { buildEmbed, decrypt } from "../index";
+
 const { React } = common;
+const { Button, Modal } = components;
+// @ts-expect-error Package doesnt include it yet
+const { closeModal, openModal } = common.modal;
+
+const FormText = components.FormText.DEFAULT;
 
 const rawTextInput: any = webpack.waitForModule(
   webpack.filters.byProps("defaultProps", "Sizes", "contextType"),
 );
 
-const rawButton = webpack.waitForModule(webpack.filters.byProps("Hovers", "Looks", "Sizes"));
-
-let Button: any;
 let TextInput: any;
 
 export async function initDecModal() {
   TextInput = webpack.getExportsForProps(await rawTextInput, ["contextType"]);
-  Button = webpack.getExportsForProps(await rawButton, ["Link"]);
 }
 
 let modalKey: any;
+
+interface ModalProps {
+  transitionState: any;
+  onClose(): Promise<void>;
+}
 
 function DecModal(props: ModalProps) {
   // @ts-ignore
@@ -34,23 +32,24 @@ function DecModal(props: ModalProps) {
   let [password, setPassword] = React.useState("password");
 
   return (
-    <ModalRoot {...props}>
-      <ModalHeader>
-        <div style={{ color: "gray", fontSize: "30px" }}>Decrypt Message</div>
-      </ModalHeader>
-      <ModalContent>
-        <div style={{ color: "gray" }}>Secret</div>
+    <Modal.ModalRoot {...props}>
+      <Modal.ModalHeader>
+        <FormText style={{ fontSize: "30px" }}>Decrypt Message</FormText>
+      </Modal.ModalHeader>
+      <Modal.ModalContent>
+        <FormText>Secret</FormText>
         <TextInput defaultValue={secret} disabled={true}></TextInput>
-        <div style={{ color: "gray" }}>Password</div>
+        <FormText>Password</FormText>
         <TextInput
           defaultValue={"password"}
           onChange={(e: string) => {
             setPassword(e);
           }}></TextInput>
         <div style={{ marginTop: 10 }} />
-      </ModalContent>
-      <ModalFooter>
+      </Modal.ModalContent>
+      <Modal.ModalFooter>
         <Button
+          color={Button.Colors.GREEN}
           onClick={() => {
             const toSend = decrypt(secret, password);
             if (!toSend) return;
@@ -62,6 +61,8 @@ function DecModal(props: ModalProps) {
           Decrypt
         </Button>
         <Button
+          color={Button.Colors.TRANSPARENT}
+          look={Button.Looks.LINK}
           style={{ left: 15, position: "absolute" }}
           onClick={() => {
             // @ts-ignore
@@ -69,11 +70,13 @@ function DecModal(props: ModalProps) {
           }}>
           Cancel
         </Button>
-      </ModalFooter>
-    </ModalRoot>
+      </Modal.ModalFooter>
+    </Modal.ModalRoot>
   );
 }
 
 export function buildDecModal(msg: any): any {
-  modalKey = openModal((props) => <DecModal {...props} {...msg} />);
+  modalKey = openModal((props: JSX.IntrinsicAttributes & ModalProps) => (
+    <DecModal {...props} {...msg} />
+  ));
 }

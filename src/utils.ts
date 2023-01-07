@@ -78,7 +78,6 @@ export function cleanupEmbed(embed: rawDiscordEmbed): DiscordEmbed {
 }
 
 export function updateMessage(message: unknown): void {
-  // @ts-expect-error no type
   common.fluxDispatcher.dispatch({
     type: "MESSAGE_UPDATE",
     message,

@@ -8,7 +8,7 @@ import { cleanupEmbed, getEmbed, updateMessage } from "./utils";
 
 const getStegCloak: Promise<StegCloakImport> = import(
   // @ts-expect-error SHUT UP
-  "https://unpkg.com/stegcloak-dist@1.0.1/index.js"
+  "https://unpkg.com/stegcloak-dist@1.0.0/index.js"
 );
 
 const INV_DETECTION = new RegExp(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/);

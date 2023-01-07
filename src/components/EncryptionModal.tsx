@@ -1,11 +1,10 @@
 import { common, components, webpack } from "replugged";
-
 import { encrypt } from "../index";
 
 const { React } = common;
-// @ts-expect-error Package not updated yet
 const { closeModal, openModal } = common.modal;
 const { Button, SwitchItem, Modal, Divider } = components;
+
 const FormText = components.FormText.DEFAULT;
 
 const rawTextInput: any = webpack.waitForModule(

@@ -4,7 +4,6 @@ import { buildEmbed, decrypt } from "../index";
 
 const { React } = common;
 const { Button, Modal } = components;
-// @ts-expect-error Package doesnt include it yet
 const { closeModal, openModal } = common.modal;
 
 const FormText = components.FormText.DEFAULT;

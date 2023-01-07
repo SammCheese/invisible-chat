@@ -1,33 +1,49 @@
 import esbuild from "esbuild";
-import { globalExternals } from "@fal-works/esbuild-plugin-global-externals";
 import path, { join } from "path";
 import fs, { existsSync, rmSync } from "fs";
 import _manifest from "../manifest.json";
-import { Plugin } from "replugged/dist/types/addon";
+import { PluginManifest } from "replugged/dist/types/addon";
 
-const manifest: Plugin = _manifest;
+const manifest: PluginManifest = _manifest;
 
 const NODE_VERSION = "14";
 const CHROME_VERSION = "91";
 
-const globalModules = {
-  replugged: {
-    varName: "replugged",
-    namedExports: [
-      "Injector",
-      "webpack",
-      "common",
-      "notices",
-      "commands",
-      "settings",
-      "quickCSS",
-      "themes",
-      "ignition",
-      "plugins",
-      "util",
-      "components",
-    ],
-    defaultExport: true,
+const globalModules: esbuild.Plugin = {
+  name: "globalModules",
+  setup: (build) => {
+    build.onResolve({ filter: /^replugged.+$/ }, (args) => {
+      if (args.kind !== "import-statement") return;
+
+      return {
+        errors: [
+          {
+            text: `Importing from a path (${args.path}) is not supported. Instead, please import from "replugged" and destructure the required modules.`,
+          },
+        ],
+      };
+    });
+
+    build.onResolve({ filter: /^replugged$/ }, (args) => {
+      if (args.kind !== "import-statement") return;
+
+      return {
+        path: args.path,
+        namespace: "replugged",
+      };
+    });
+
+    build.onLoad(
+      {
+        filter: /.*/,
+        namespace: "replugged",
+      },
+      () => {
+        return {
+          contents: "module.exports = window.replugged",
+        };
+      },
+    );
   },
 };
 
@@ -86,7 +102,7 @@ if ("renderer" in manifest) {
       target: `chrome${CHROME_VERSION}`,
       outfile: "dist/renderer.js",
       format: "esm" as esbuild.Format,
-      plugins: [globalExternals(globalModules), install],
+      plugins: [globalModules, install],
     }),
   );
 
@@ -132,7 +148,7 @@ if ("plaintextPatches" in manifest) {
       target: `chrome${CHROME_VERSION}`,
       outfile: "dist/plaintextPatches.js",
       format: "esm" as esbuild.Format,
-      plugins: [globalExternals(globalModules), install],
+      plugins: [globalModules, install],
     }),
   );
 

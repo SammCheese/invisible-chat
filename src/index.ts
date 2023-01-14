@@ -1,9 +1,7 @@
 import { Indicator } from "./assets/indicator";
 import { popoverIcon } from "./assets/popoverIcon";
 import { chatbarLock } from "./assets/chatbarLock";
-import { initEncModal } from "./components/EncryptionModal";
-import { buildDecModal, initDecModal } from "./components/DecryptionModal";
-
+import { buildDecModal } from "./components/DecryptionModal";
 import { cleanupEmbed, getEmbed, updateMessage } from "./utils";
 
 const getStegCloak: Promise<StegCloakImport> = import(
@@ -24,10 +22,6 @@ export async function start(): Promise<void> {
   StegCloak = (await getStegCloak).default;
   steggo = await new StegCloak(true, false);
 
-  // Prepare Modals
-  await initDecModal();
-  await initEncModal();
-
   // Register the Message Receiver
   // @ts-expect-error adding to window
   window.invisiblechat = {
@@ -39,16 +33,13 @@ export async function start(): Promise<void> {
   };
 }
 
-// Grab the data from the above Plantext Patches
+// Grab the data from the above Plaintext Patches
 function receiver(message: DiscordMessage): void {
   void buildDecModal({ message });
 }
 
 export async function buildEmbed(message: DiscordMessage, revealed: string): Promise<void> {
-  const urlCheck = revealed.match(URL_DETECTION)!;
-
-  let attachment: DiscordEmbed;
-  if (!urlCheck) attachment = await getEmbed(new URL(urlCheck[0]));
+  const urlCheck = revealed.match(URL_DETECTION);
 
   let embed: DiscordEmbed = {
     type: "rich",
@@ -61,8 +52,9 @@ export async function buildEmbed(message: DiscordMessage, revealed: string): Pro
   };
 
   message.embeds = message.embeds.map((embed: rawDiscordEmbed) => cleanupEmbed(embed));
-  if (attachment!) message.embeds.push(attachment);
   message.embeds.push(embed);
+  if (urlCheck?.length) message.embeds.push(await getEmbed(new URL(urlCheck[0])));
+
   updateMessage(message);
   return Promise.resolve();
 }

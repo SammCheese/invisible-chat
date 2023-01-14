@@ -1,21 +1,9 @@
-import { common, components, webpack } from "replugged";
+import { common, components } from "replugged";
 import { encrypt } from "../index";
 
 const { React } = common;
 const { closeModal, openModal } = common.modal;
-const { Button, SwitchItem, Modal, Divider } = components;
-
-const FormText = components.FormText.DEFAULT;
-
-const rawTextInput: any = webpack.waitForModule(
-  webpack.filters.byProps("defaultProps", "Sizes", "contextType"),
-);
-
-let TextInput: any;
-
-export async function initEncModal() {
-  TextInput = webpack.getExportsForProps(await rawTextInput, ["contextType"]);
-}
+const { Button, SwitchItem, Modal, Divider, Input, Text, Flex } = components;
 
 let modalKey: any;
 
@@ -35,35 +23,38 @@ function EncModal(props: ModalProps) {
   return (
     <Modal.ModalRoot {...props}>
       <Modal.ModalHeader>
-        <FormText style={{ fontSize: "30px" }}>Encrypt Message</FormText>
+        <Text.H1>Encrypt Message</Text.H1>
       </Modal.ModalHeader>
       <Modal.ModalContent>
-        <FormText style={{ marginTop: "10px" }}>Secret Message</FormText>
-        <TextInput
+        <Text style={{ marginTop: "10px" }}>Secret Message</Text>
+        <Input
           onChange={(e: string) => {
             setSecret(e);
-          }}></TextInput>
-        <FormText style={{ marginTop: "10px" }}>Cover (2 or more Words!!)</FormText>
-        <TextInput
+          }}></Input>
+        <Text style={{ marginTop: "10px" }}>Cover (2 or more Words!!)</Text>
+        <Input
           disabled={DontUseCover}
           onChange={(e: string) => {
             setCover(e);
-          }}></TextInput>
-        <FormText style={{ marginTop: "10px" }}>Password</FormText>
-        <TextInput
-          defaultValue={"password"}
+          }}></Input>
+        <Text style={{ marginTop: "10px" }}>Password</Text>
+        <Input
+          placeholder="password"
           onChange={(e: string) => {
             setPassword(e);
-          }}></TextInput>
+          }}></Input>
         <Divider style={{ marginTop: "10px", marginBottom: "10px" }} />
-        <SwitchItem
-          value={DontUseCover}
-          onChange={(e: boolean) => {
-            console.log(e);
-            setDontUseCover(e);
-          }}>
-          Don't use a cover
-        </SwitchItem>
+        <Flex>
+          <SwitchItem
+            checked={DontUseCover}
+            onChange={(e: boolean) => {
+              console.log(e);
+              setDontUseCover(e);
+            }}
+          />
+          <Text style={{ left: "20px", top: "4px", position: "relative" }}>Dont use a Cover</Text>
+        </Flex>
+        <Divider style={{ marginTop: "10px", marginBottom: "10px" }} />
       </Modal.ModalContent>
       <Modal.ModalFooter>
         <Button

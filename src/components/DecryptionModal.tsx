@@ -1,22 +1,10 @@
-import { common, components, webpack } from "replugged";
+import { common, components } from "replugged";
 
 import { buildEmbed, decrypt } from "../index";
 
 const { React } = common;
-const { Button, Modal } = components;
+const { Button, Modal, Input, Text } = components;
 const { closeModal, openModal } = common.modal;
-
-const FormText = components.FormText.DEFAULT;
-
-const rawTextInput: any = webpack.waitForModule(
-  webpack.filters.byProps("defaultProps", "Sizes", "contextType"),
-);
-
-let TextInput: any;
-
-export async function initDecModal() {
-  TextInput = webpack.getExportsForProps(await rawTextInput, ["contextType"]);
-}
 
 let modalKey: any;
 
@@ -33,17 +21,18 @@ function DecModal(props: ModalProps) {
   return (
     <Modal.ModalRoot {...props}>
       <Modal.ModalHeader>
-        <FormText style={{ fontSize: "30px" }}>Decrypt Message</FormText>
+        <Text.H1 style={{ fontSize: "30px" }}>Decrypt Message</Text.H1>
       </Modal.ModalHeader>
       <Modal.ModalContent>
-        <FormText>Secret</FormText>
-        <TextInput defaultValue={secret} disabled={true}></TextInput>
-        <FormText>Password</FormText>
-        <TextInput
-          defaultValue={"password"}
+        <Text>Secret</Text>
+        {/* @ts-expect-error faulty type */}
+        <Input defaultValue={secret} disabled={true}></Input>
+        <Text>Password</Text>
+        <Input
+          placeholder="password"
           onChange={(e: string) => {
             setPassword(e);
-          }}></TextInput>
+          }}></Input>
         <div style={{ marginTop: 10 }} />
       </Modal.ModalContent>
       <Modal.ModalFooter>

@@ -1,9 +1,9 @@
 import { common, components } from "replugged";
-import { encrypt } from "../index";
+import { InvSettings, encrypt } from "../utils";
 
 const { React } = common;
 const { closeModal, openModal } = common.modal;
-const { Button, SwitchItem, Modal, Divider, Input, Text, Flex } = components;
+const { Button, Switch, Modal, Divider, TextInput, Text, Flex } = components;
 
 let modalKey: any;
 
@@ -13,9 +13,11 @@ interface ModalProps {
 }
 
 function EncModal(props: ModalProps) {
+  const defaultPassword = InvSettings.get("defaultPassword", "password");
+
   let [secret, setSecret] = React.useState("");
   let [cover, setCover] = React.useState("");
-  let [password, setPassword] = React.useState("password");
+  let [password, setPassword] = React.useState(defaultPassword);
   let [DontUseCover, setDontUseCover] = React.useState(false);
 
   const valid = secret && (DontUseCover || (cover && /\w \w/.test(cover)));
@@ -27,28 +29,27 @@ function EncModal(props: ModalProps) {
       </Modal.ModalHeader>
       <Modal.ModalContent>
         <Text style={{ marginTop: "10px" }}>Secret Message</Text>
-        <Input
+        <TextInput
           onChange={(e: string) => {
             setSecret(e);
-          }}></Input>
+          }}></TextInput>
         <Text style={{ marginTop: "10px" }}>Cover (2 or more Words!!)</Text>
-        <Input
+        <TextInput
           disabled={DontUseCover}
           onChange={(e: string) => {
             setCover(e);
-          }}></Input>
+          }}></TextInput>
         <Text style={{ marginTop: "10px" }}>Password</Text>
-        <Input
-          placeholder="password"
+        <TextInput
+          placeholder={defaultPassword}
           onChange={(e: string) => {
             setPassword(e);
-          }}></Input>
+          }}></TextInput>
         <Divider style={{ marginTop: "10px", marginBottom: "10px" }} />
         <Flex>
-          <SwitchItem
+          <Switch
             checked={DontUseCover}
             onChange={(e: boolean) => {
-              console.log(e);
               setDontUseCover(e);
             }}
           />
@@ -63,7 +64,7 @@ function EncModal(props: ModalProps) {
           onClick={() => {
             if (!valid) return;
             const encrypted = encrypt(secret, password, DontUseCover ? "d d" : cover);
-            const toSend = DontUseCover ? encrypted.replaceAll("d", "") : encrypt;
+            const toSend = DontUseCover ? encrypted.replaceAll("d", "") : encrypted;
             if (!toSend) return;
 
             // @ts-expect-error

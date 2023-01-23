@@ -1,6 +1,6 @@
 {
   "name": "invisible-chat",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Encrypt your Discord Messages",
   "engines": {
     "node": ">=14.0.0"
@@ -33,7 +33,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-react": "^7.31.10",
     "prettier": "^2.8.1",
-    "replugged": "4.0.0-beta0.21",
+    "replugged": "4.0.0-beta0.22",
     "tsx": "^3.10.3",
     "typescript": "^4.8.4"
   }

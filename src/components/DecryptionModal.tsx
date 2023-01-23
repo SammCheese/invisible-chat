@@ -1,9 +1,10 @@
 import { common, components } from "replugged";
 
-import { buildEmbed, decrypt } from "../index";
+import { buildEmbed } from "../index";
+import { InvSettings, decrypt } from "../utils";
 
 const { React } = common;
-const { Button, Modal, Input, Text } = components;
+const { Button, Modal, TextInput, Text } = components;
 const { closeModal, openModal } = common.modal;
 
 let modalKey: any;
@@ -14,9 +15,10 @@ interface ModalProps {
 }
 
 function DecModal(props: ModalProps) {
+  const defaultPassword = InvSettings.get("defaultPassword", "password");
   // @ts-ignore
   let secret: string = props?.message?.content;
-  let [password, setPassword] = React.useState("password");
+  let [password, setPassword] = React.useState(defaultPassword);
 
   return (
     <Modal.ModalRoot {...props}>
@@ -26,13 +28,13 @@ function DecModal(props: ModalProps) {
       <Modal.ModalContent>
         <Text>Secret</Text>
         {/* @ts-expect-error faulty type */}
-        <Input defaultValue={secret} disabled={true}></Input>
+        <TextInput defaultValue={secret} disabled={true}></TextInput>
         <Text>Password</Text>
-        <Input
-          placeholder="password"
+        <TextInput
+          placeholder={defaultPassword}
           onChange={(e: string) => {
             setPassword(e);
-          }}></Input>
+          }}></TextInput>
         <div style={{ marginTop: 10 }} />
       </Modal.ModalContent>
       <Modal.ModalFooter>

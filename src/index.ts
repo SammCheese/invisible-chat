@@ -2,25 +2,16 @@ import { Indicator } from "./assets/indicator";
 import { popoverIcon } from "./assets/popoverIcon";
 import { chatbarLock } from "./assets/chatbarLock";
 import { buildDecModal } from "./components/DecryptionModal";
-import { cleanupEmbed, getEmbed, updateMessage } from "./utils";
-
-const getStegCloak: Promise<StegCloakImport> = import(
-  // @ts-expect-error SHUT UP
-  "https://unpkg.com/stegcloak-dist@1.0.0/index.js"
-);
+import { cleanupEmbed, getEmbed, interatePasswords, stegInit, updateMessage } from "./utils";
 
 const INV_DETECTION = new RegExp(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/);
 const URL_DETECTION = new RegExp(
   /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/,
 );
 
-let StegCloak: Constructor<StegCloak>;
-let steggo: StegCloak;
-
 export async function start(): Promise<void> {
-  // Prepare Lib
-  StegCloak = (await getStegCloak).default;
-  steggo = await new StegCloak(true, false);
+  // Prepare Lib and Settings
+  await stegInit();
 
   // Register the Message Receiver
   // @ts-expect-error adding to window
@@ -33,9 +24,14 @@ export async function start(): Promise<void> {
   };
 }
 
+export { Settings } from "./components/Settings";
+
 // Grab the data from the above Plaintext Patches
-function receiver(message: DiscordMessage): void {
-  void buildDecModal({ message });
+function receiver(message: DiscordMessage): Promise<void> | void {
+  let passwordCheck = interatePasswords(message);
+  // if a stored password leads to the decrypted string, skip the modal
+  if (passwordCheck) return void buildEmbed(message, passwordCheck);
+  return void buildDecModal({ message });
 }
 
 export async function buildEmbed(message: DiscordMessage, revealed: string): Promise<void> {
@@ -57,16 +53,4 @@ export async function buildEmbed(message: DiscordMessage, revealed: string): Pro
 
   updateMessage(message);
   return Promise.resolve();
-}
-
-export function encrypt(secret: string, password: string, cover: string): string {
-  // Appending \u200b to the secret
-  // eslint-disable-next-line no-irregular-whitespace
-  return steggo.hide(`${secret}​`, password, cover);
-}
-
-export function decrypt(secret: string, password: string): string {
-  // Removing the \u200b indicator
-  // eslint-disable-next-line no-irregular-whitespace
-  return steggo.reveal(secret, password).replace("​", "");
 }

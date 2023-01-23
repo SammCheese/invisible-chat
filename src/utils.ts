@@ -1,9 +1,32 @@
 /* eslint-disable no-undefined */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { common } from "replugged";
+import { common, settings } from "replugged";
 
 const EMBED_URL = "https://embed.sammcheese.net";
+
+const getStegCloak: Promise<StegCloakImport> = import(
+  // @ts-expect-error SHUT UP
+  "https://unpkg.com/stegcloak-dist@1.0.0/index.js"
+);
+
+let StegCloak: Constructor<StegCloak>;
+let steggo: StegCloak;
+
+export let InvSettings: settings.SettingsManager<
+  { passwords: string[]; defaultPassword: string },
+  never
+>;
+
+export async function stegInit(): Promise<void> {
+  StegCloak = (await getStegCloak).default;
+  steggo = await new StegCloak(true, false);
+
+  InvSettings = await settings.init("invisiblechat", {
+    passwords: [],
+    defaultPassword: "password",
+  });
+}
 
 export function cleanupEmbed(embed: rawDiscordEmbed): DiscordEmbed {
   /* backported code from MLV2 rewrite */
@@ -111,4 +134,44 @@ export async function getEmbed(url: URL): Promise<DiscordEmbed> {
 
   const rawRes = await fetch(EMBED_URL, options);
   return await rawRes.json();
+}
+
+export function isCorrectPassword(result: string): boolean {
+  // eslint-disable-next-line no-irregular-whitespace
+  return result.endsWith("​");
+}
+
+export function interatePasswords(message: DiscordMessage): string | false | undefined {
+  const passwords = InvSettings.get("passwords", []);
+  let found = false;
+  let processed = 0;
+
+  if (!message) return false;
+  if (!passwords || !passwords.length) return false;
+
+  if (message.content.match(/^\W/)) message.content = `d ${message.content}d`;
+
+  passwords.forEach((password) => {
+    processed++;
+    let result = decrypt(message.content, password);
+    if (isCorrectPassword(result) && !found) {
+      found = true;
+      return result;
+    }
+    if (processed >= passwords.length && !found) {
+      return false;
+    }
+  });
+}
+
+export function encrypt(secret: string, password: string, cover: string): string {
+  // Appending \u200b to the secret for password recognition
+  // eslint-disable-next-line no-irregular-whitespace
+  return steggo.hide(`${secret}​`, password, cover);
+}
+
+export function decrypt(secret: string, password: string): string {
+  // Removing the \u200b indicator
+  // eslint-disable-next-line no-irregular-whitespace
+  return steggo.reveal(secret, password).replace("​", "");
 }

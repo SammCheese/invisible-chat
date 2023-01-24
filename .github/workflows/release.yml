@@ -33,5 +33,5 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "*.asar"
+          artifacts: "bundle/*"
           makeLatest: true

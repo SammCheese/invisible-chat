@@ -27,11 +27,14 @@ export async function start(): Promise<void> {
 export { Settings } from "./components/Settings";
 
 // Grab the data from the above Plaintext Patches
-function receiver(message: DiscordMessage): Promise<void> | void {
-  let passwordCheck = interatePasswords(message);
+async function receiver(message: DiscordMessage): Promise<void> {
+  await interatePasswords(message).then((res) => {
+    if (res) return void buildEmbed(message, res);
+    return void buildDecModal({ message });
+  });
   // if a stored password leads to the decrypted string, skip the modal
-  if (passwordCheck) return void buildEmbed(message, passwordCheck);
-  return void buildDecModal({ message });
+  // if (passwordCheck) return void buildEmbed(message, passwordCheck);
+  // return void buildDecModal({ message });
 }
 
 export async function buildEmbed(message: DiscordMessage, revealed: string): Promise<void> {

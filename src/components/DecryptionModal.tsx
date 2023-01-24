@@ -41,7 +41,7 @@ function DecModal(props: ModalProps) {
         <Button
           color={Button.Colors.GREEN}
           onClick={() => {
-            const toSend = decrypt(secret, password);
+            const toSend = decrypt(secret, password, true);
             if (!toSend) return;
             // @ts-ignore
             buildEmbed(props?.message, toSend);

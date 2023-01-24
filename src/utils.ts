@@ -136,42 +136,45 @@ export async function getEmbed(url: URL): Promise<DiscordEmbed> {
   return await rawRes.json();
 }
 
+// Check for the extra character we add during encryption
 export function isCorrectPassword(result: string): boolean {
-  // eslint-disable-next-line no-irregular-whitespace
-  return result.endsWith("​");
+  return result.endsWith("\u200b");
 }
 
-export function interatePasswords(message: DiscordMessage): string | false | undefined {
+// Iterates through passwords and returns either false or the decrypted message
+export async function interatePasswords(message: DiscordMessage): Promise<string | false> {
   const passwords = InvSettings.get("passwords", []);
   let found = false;
   let processed = 0;
+  let { content } = message;
 
   if (!message) return false;
   if (!passwords || !passwords.length) return false;
 
-  if (message.content.match(/^\W/)) message.content = `d ${message.content}d`;
+  // we use an extra variable so we dont have to edit the message content directly
+  if (message.content.match(/^\W/)) content = `d ${message.content}d`;
 
-  passwords.forEach((password) => {
-    processed++;
-    let result = decrypt(message.content, password);
-    if (isCorrectPassword(result) && !found) {
-      found = true;
-      return result;
-    }
-    if (processed >= passwords.length && !found) {
-      return false;
-    }
+  return new Promise((res, _) => {
+    passwords.forEach((password) => {
+      processed++;
+      let result = decrypt(content, password, false);
+      if (isCorrectPassword(result) && !found) {
+        found = true;
+        return res(result);
+      }
+      if (processed >= passwords.length && !found) {
+        return res(false);
+      }
+    });
   });
 }
 
 export function encrypt(secret: string, password: string, cover: string): string {
   // Appending \u200b to the secret for password recognition
-  // eslint-disable-next-line no-irregular-whitespace
-  return steggo.hide(`${secret}​`, password, cover);
+  return steggo.hide(`${secret}\u200b`, password, cover);
 }
 
-export function decrypt(secret: string, password: string): string {
-  // Removing the \u200b indicator
-  // eslint-disable-next-line no-irregular-whitespace
-  return steggo.reveal(secret, password).replace("​", "");
+export function decrypt(secret: string, password: string, removedetection: boolean): string {
+  const decrypted = steggo.reveal(secret, password);
+  return removedetection ? decrypted.replace("\u200b", "") : decrypted;
 }

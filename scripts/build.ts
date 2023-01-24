@@ -67,9 +67,7 @@ const install: esbuild.Plugin = {
     build.onEnd(() => {
       if (!process.argv.includes("--no-install")) {
         const dest = join(CONFIG_PATH, "plugins", manifest.id);
-        if (existsSync(dest)) {
-          rmSync(dest, { recursive: true });
-        }
+        if (existsSync(dest)) rmSync(dest, { recursive: true });
         cpSync("dist", dest, { recursive: true });
         console.log("Installed updated version");
       }

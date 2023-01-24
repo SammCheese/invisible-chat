@@ -13,7 +13,7 @@ export function Settings() {
 
   return (
     <>
-      <Text.H2>Default Password</Text.H2>
+      <Text.Eyebrow style={{ marginBottom: "5px" }}>Default Password</Text.Eyebrow>
       <TextInput
         value={defaultSetting}
         onChange={(e: string) => {
@@ -21,8 +21,10 @@ export function Settings() {
           setDefaultSetting(e);
         }}
       />
-      <Divider />
-      <Text.H2>Saved Passwords (separated by a ", ")</Text.H2>
+      <Divider style={{ marginTop: "10px", marginBottom: "10px" }} />
+      <Text.Eyebrow style={{ marginBottom: "5px" }}>
+        Saved Passwords (separated by a ", ")
+      </Text.Eyebrow>
       <TextInput
         placeholder="password, placeholder, test"
         value={passwords.join(", ")}

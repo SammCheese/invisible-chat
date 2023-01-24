@@ -28,18 +28,22 @@ function EncModal(props: ModalProps) {
         <Text.H1>Encrypt Message</Text.H1>
       </Modal.ModalHeader>
       <Modal.ModalContent>
-        <Text style={{ marginTop: "10px" }}>Secret Message</Text>
+        <Text.Eyebrow style={{ marginTop: "10px", marginBottom: "5px" }}>
+          Secret Message
+        </Text.Eyebrow>
         <TextInput
           onChange={(e: string) => {
             setSecret(e);
           }}></TextInput>
-        <Text style={{ marginTop: "10px" }}>Cover (2 or more Words!!)</Text>
+        <Text.Eyebrow style={{ marginTop: "10px", marginBottom: "5px" }}>
+          Cover (2 or more Words!!)
+        </Text.Eyebrow>
         <TextInput
           disabled={DontUseCover}
           onChange={(e: string) => {
             setCover(e);
           }}></TextInput>
-        <Text style={{ marginTop: "10px" }}>Password</Text>
+        <Text.Eyebrow style={{ marginTop: "10px", marginBottom: "5px" }}>Password</Text.Eyebrow>
         <TextInput
           placeholder={defaultPassword}
           onChange={(e: string) => {
@@ -53,7 +57,9 @@ function EncModal(props: ModalProps) {
               setDontUseCover(e);
             }}
           />
-          <Text style={{ left: "20px", top: "4px", position: "relative" }}>Dont use a Cover</Text>
+          <Text.Eyebrow style={{ left: "20px", top: "4px", position: "relative" }}>
+            Dont use a Cover
+          </Text.Eyebrow>
         </Flex>
         <Divider style={{ marginTop: "10px", marginBottom: "10px" }} />
       </Modal.ModalContent>

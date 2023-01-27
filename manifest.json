@@ -12,7 +12,7 @@
     "type": "github",
     "id": "SammCheese/invisible-chat"
   },
-  "license": "MIT",
+  "license": "Unlicensed",
   "type": "replugged-plugin",
   "renderer": "src/index.ts",
   "plaintextPatches": "src/plaintextPatches.ts"

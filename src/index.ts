@@ -28,13 +28,11 @@ export { Settings } from "./components/Settings";
 
 // Grab the data from the above Plaintext Patches
 async function receiver(message: DiscordMessage): Promise<void> {
+  // if a stored password leads to the decrypted string, skip the modal
   await interatePasswords(message).then((res) => {
     if (res) return void buildEmbed(message, res);
     return void buildDecModal({ message });
   });
-  // if a stored password leads to the decrypted string, skip the modal
-  // if (passwordCheck) return void buildEmbed(message, passwordCheck);
-  // return void buildDecModal({ message });
 }
 
 export async function buildEmbed(message: DiscordMessage, revealed: string): Promise<void> {
@@ -50,6 +48,7 @@ export async function buildEmbed(message: DiscordMessage, revealed: string): Pro
     },
   };
 
+  // Convert discords existing embeds to sendable ones. Prevents existing embeds from breaking
   message.embeds = message.embeds.map((embed: rawDiscordEmbed) => cleanupEmbed(embed));
   message.embeds.push(embed);
   if (urlCheck?.length) message.embeds.push(await getEmbed(new URL(urlCheck[0])));

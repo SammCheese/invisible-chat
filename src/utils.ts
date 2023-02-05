@@ -18,6 +18,7 @@ export let InvSettings: settings.SettingsManager<
   never
 >;
 
+// Load 
 export async function stegInit(): Promise<void> {
   StegCloak = (await getStegCloak).default;
   steggo = await new StegCloak(true, false);

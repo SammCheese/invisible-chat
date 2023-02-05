@@ -6,7 +6,6 @@ const { TextInput, Text, Divider } = components;
 
 export function Settings() {
   let [passwords, setPasswords] = React.useState(InvSettings.get("passwords", []));
-
   let [defaultSetting, setDefaultSetting] = React.useState(
     InvSettings.get("defaultPassword", "password"),
   );

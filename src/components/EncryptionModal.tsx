@@ -96,5 +96,5 @@ function EncModal(props: ModalProps) {
 }
 
 export function buildEncModal(): any {
-  modalKey = openModal((props: JSX.IntrinsicAttributes & ModalProps) => <EncModal {...props} />);
+  modalKey = openModal((props: ModalProps) => <EncModal {...props} />);
 }

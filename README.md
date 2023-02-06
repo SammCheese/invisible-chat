@@ -2,6 +2,8 @@
 
 Encrypt your Messages with the power of Stegcloak
 
+[![Install](https://img.shields.io/badge/-Install%20in%20Replugged-blue?style=for-the-badge&logo=none)](https://replugged.dev/install?identifier=SammCheese/Invisible-Chat&source=github)
+
 ## Install
 
 1. Go to "Releases"
@@ -11,7 +13,7 @@ Encrypt your Messages with the power of Stegcloak
 ## Usage
 
 We, as cool people, use the self-explanatory UI and the gif to know how to use the plugin
- ![gif](https://cdn.discordapp.com/attachments/1000955968592552047/1001532481452912801/Yn18XxCcIS.gif)
+![gif](https://cdn.discordapp.com/attachments/1000955968592552047/1001532481452912801/Yn18XxCcIS.gif)
 
 ## Credits
 

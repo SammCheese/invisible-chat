@@ -27,7 +27,6 @@ function DecModal(props: ModalProps) {
       </Modal.ModalHeader>
       <Modal.ModalContent>
         <Text.Eyebrow style={{ marginBottom: "5px" }}>Secret</Text.Eyebrow>
-        {/* @ts-expect-error faulty type */}
         <TextInput defaultValue={secret} disabled={true}></TextInput>
         <Text.Eyebrow style={{ marginBottom: "5px" }}>Password</Text.Eyebrow>
         <TextInput

@@ -2,7 +2,7 @@ import { Indicator } from "./assets/indicator";
 import { popoverIcon } from "./assets/popoverIcon";
 import { chatbarLock } from "./assets/chatbarLock";
 import { buildDecModal } from "./components/DecryptionModal";
-import { cleanupEmbed, getEmbed, interatePasswords, stegInit, updateMessage } from "./utils";
+import { cleanupEmbed, getEmbed, iteratePasswords, stegInit, updateMessage } from "./utils";
 
 const INV_DETECTION = new RegExp(/( \u200c|\u200d |[\u2060-\u2064])[^\u200b]/);
 const URL_DETECTION = new RegExp(
@@ -29,7 +29,7 @@ export { Settings } from "./components/Settings";
 // Grab the data from the above Plaintext Patches
 async function receiver(message: DiscordMessage): Promise<void> {
   // if a stored password leads to the decrypted string, skip the modal
-  await interatePasswords(message).then((res) => {
+  await iteratePasswords(message).then((res: string | false) => {
     if (res) return void buildEmbed(message, res);
     return void buildDecModal({ message });
   });

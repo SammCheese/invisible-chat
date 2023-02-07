@@ -143,31 +143,24 @@ export function isCorrectPassword(result: string): boolean {
 }
 
 // Iterates through passwords and returns either false or the decrypted message
-export async function interatePasswords(message: DiscordMessage): Promise<string | false> {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function iteratePasswords(message: DiscordMessage): Promise<string | false> {
   const passwords = InvSettings.get("passwords", []);
-  let found = false;
-  let processed = 0;
-  let { content } = message;
+  if (!message || !passwords || !passwords.length) return false;
 
-  if (!message) return false;
-  if (!passwords || !passwords.length) return false;
+  let { content } = message;
 
   // we use an extra variable so we dont have to edit the message content directly
   if (message.content.match(/^\W/)) content = `d ${message.content}d`;
 
-  return new Promise((res, _) => {
-    passwords.forEach((password) => {
-      processed++;
-      let result = decrypt(content, password, false);
-      if (isCorrectPassword(result) && !found) {
-        found = true;
-        return res(result);
-      }
-      if (processed >= passwords.length && !found) {
-        return res(false);
-      }
-    });
-  });
+  for (let i = 0; i < passwords.length; i++) {
+    const result = decrypt(content, passwords[i], false);
+    if (isCorrectPassword(result)) {
+      return result;
+    }
+  }
+
+  return false;
 }
 
 export function encrypt(secret: string, password: string, cover: string): string {

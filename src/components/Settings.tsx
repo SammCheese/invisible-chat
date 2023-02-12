@@ -28,7 +28,10 @@ export function Settings() {
         placeholder="password, placeholder, test"
         value={passwords.join(", ")}
         onChange={(e: string) => {
-          InvSettings.set("passwords", e.split(", "));
+          InvSettings.set(
+            "passwords",
+            e.split(",").map((s) => s.trim()),
+          );
           setPasswords(e.split(", "));
         }}
       />

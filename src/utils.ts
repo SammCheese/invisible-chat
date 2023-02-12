@@ -146,12 +146,12 @@ export function isCorrectPassword(result: string): boolean {
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function iteratePasswords(message: DiscordMessage): Promise<string | false> {
   const passwords = InvSettings.get("passwords", []);
-  if (!message || !passwords || !passwords.length) return false;
+  if (!message?.content || !passwords?.length) return false;
 
   let { content } = message;
 
   // we use an extra variable so we dont have to edit the message content directly
-  if (message.content.match(/^\W/)) content = `d ${message.content}d`;
+  if (/^\W/.test(message.content)) content = `d ${message.content}d`;
 
   for (let i = 0; i < passwords.length; i++) {
     const result = decrypt(content, passwords[i], false);

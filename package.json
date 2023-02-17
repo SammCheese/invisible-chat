@@ -1,6 +1,6 @@
 {
   "name": "invisible-chat",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Encrypt your Discord Messages",
   "engines": {
     "node": ">=14.0.0"
@@ -19,7 +19,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "Unlicensed",
   "devDependencies": {
     "@types/node": "^18.11.2",
     "@typescript-eslint/eslint-plugin": "^5.40.1",

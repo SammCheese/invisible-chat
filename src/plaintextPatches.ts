@@ -11,8 +11,8 @@ const patches: types.PlaintextPatch[] = [
       },
       {
         // Chatbar Lock
-        match: /,.=.\.activeCommand,.=.\.activeCommandOption,.{0,255},(.)=\[\];/,
-        replace: "$&;try{$1.push(window.invisiblechat?.chatbarLock)}catch{};",
+        match: /(.)\.push.{1,}\(.{1,3},\{.{1,30}\},"gift"\)\)/,
+        replace: "$&;try{$1.push(window.invisiblechat?.chatbarLock)}catch{}",
       },
       {
         // Message Indicator

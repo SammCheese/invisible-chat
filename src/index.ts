@@ -1,3 +1,4 @@
+import { Injector } from "replugged";
 import { Indicator } from "./assets/indicator";
 import { popoverIcon } from "./assets/popoverIcon";
 import { chatbarLock } from "./assets/chatbarLock";
@@ -9,9 +10,14 @@ const URL_DETECTION = new RegExp(
   /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/,
 );
 
+const injector = new Injector();
+
 export async function start(): Promise<void> {
   // Prepare Lib and Settings
   await stegInit();
+
+  // Execute Injections
+  injectPopover();
 
   // Register the Message Receiver
   // @ts-expect-error adding to window
@@ -23,8 +29,23 @@ export async function start(): Promise<void> {
     Indicator,
   };
 }
+export function stop(): void {
+  injector.uninjectAll();
+}
 
-export { Settings } from "./components/Settings";
+function injectPopover(): void {
+  injector.utils.addPopoverButton((message: DiscordMessage) => {
+    const isEncrypted = INV_DETECTION.test(message.content);
+
+    if (!isEncrypted) return null;
+
+    return {
+      label: "Decrypt Message",
+      icon: popoverIcon,
+      onClick: () => void receiver(message),
+    };
+  });
+}
 
 // Grab the data from the above Plaintext Patches
 async function receiver(message: DiscordMessage): Promise<void> {
@@ -56,3 +77,5 @@ export async function buildEmbed(message: DiscordMessage, revealed: string): Pro
   updateMessage(message);
   return Promise.resolve();
 }
+
+export { Settings } from "./components/Settings";

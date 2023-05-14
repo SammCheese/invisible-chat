@@ -1,9 +1,9 @@
 /* eslint-disable no-undefined */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { common, settings } from "replugged";
+import { common, settings, types, webpack } from "replugged";
 
-const EMBED_URL = "https://embed.sammcheese.net";
+const EMBED_URL = `${common.api.getAPIBaseURL()}/unfurler/embed-urls`;
 
 const getStegCloak: Promise<StegCloakImport> = import(
   // @ts-expect-error SHUT UP
@@ -12,6 +12,7 @@ const getStegCloak: Promise<StegCloakImport> = import(
 
 let StegCloak: Constructor<StegCloak>;
 let steggo: StegCloak;
+let getTokenMod: types.ModuleExports & getTokenMod;
 
 export let InvSettings: settings.SettingsManager<
   { passwords: string[]; defaultPassword: string },
@@ -27,6 +28,8 @@ export async function stegInit(): Promise<void> {
     passwords: [],
     defaultPassword: "password",
   });
+
+  getTokenMod = await webpack.waitForModule(webpack.filters.byProps("getToken"));
 }
 
 export function cleanupEmbed(embed: rawDiscordEmbed): DiscordEmbed {
@@ -118,23 +121,21 @@ export function removeEmbed(message: DiscordMessage): void {
 }
 
 export async function getEmbed(url: URL): Promise<DiscordEmbed> {
-  // Timeout after 5 seconds
-  const controller = new AbortController();
-  const _timeout = setTimeout(() => controller.abort(), 5000);
+  const embed: DiscordEmbed = await common.api
+    .post<DiscordEmbedRequest>({
+      url: EMBED_URL,
+      body: {
+        urls: [url],
+      },
+      headers: {
+        authorization: getTokenMod.getToken(),
+      },
+    })
+    .then((res) => {
+      return res.body.embeds[0];
+    });
 
-  const options = {
-    signal: controller.signal,
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      url,
-    }),
-  };
-
-  const rawRes = await fetch(EMBED_URL, options);
-  return await rawRes.json();
+  return embed;
 }
 
 // Check for the extra character we add during encryption

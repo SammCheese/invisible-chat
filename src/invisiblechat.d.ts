@@ -6,10 +6,6 @@ interface StegCloak {
   reveal: (secret: string, password: string) => string;
 }
 
-interface getTokenMod {
-  getToken: () => string;
-}
-
 interface DiscordEmbedRequest {
   embeds: DiscordEmbed[];
 }

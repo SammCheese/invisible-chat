@@ -1,9 +1,9 @@
 /* eslint-disable no-undefined */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { common, settings, types, webpack } from "replugged";
+import { common, settings, webpack } from "replugged";
 
-const EMBED_URL = `${common.api.getAPIBaseURL()}/unfurler/embed-urls`;
+const EMBED_URL = `/unfurler/embed-urls`;
 
 const getStegCloak: Promise<StegCloakImport> = import(
   // @ts-expect-error SHUT UP
@@ -12,7 +12,6 @@ const getStegCloak: Promise<StegCloakImport> = import(
 
 let StegCloak: Constructor<StegCloak>;
 let steggo: StegCloak;
-let getTokenMod: types.ModuleExports & getTokenMod;
 
 export let InvSettings: settings.SettingsManager<
   { passwords: string[]; defaultPassword: string },
@@ -28,8 +27,6 @@ export async function stegInit(): Promise<void> {
     passwords: [],
     defaultPassword: "password",
   });
-
-  getTokenMod = await webpack.waitForModule(webpack.filters.byProps("getToken"));
 }
 
 export function cleanupEmbed(embed: rawDiscordEmbed): DiscordEmbed {
@@ -126,10 +123,7 @@ export async function getEmbed(url: URL): Promise<DiscordEmbed> {
       url: EMBED_URL,
       body: {
         urls: [url],
-      },
-      headers: {
-        authorization: getTokenMod.getToken(),
-      },
+      }
     })
     .then((res) => {
       return res.body.embeds[0];

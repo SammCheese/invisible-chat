@@ -1,7 +1,7 @@
 /* eslint-disable no-undefined */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { common, settings, webpack } from "replugged";
+import { common, settings } from "replugged";
 
 const EMBED_URL = `/unfurler/embed-urls`;
 
@@ -123,7 +123,7 @@ export async function getEmbed(url: URL): Promise<DiscordEmbed> {
       url: EMBED_URL,
       body: {
         urls: [url],
-      }
+      },
     })
     .then((res) => {
       return res.body.embeds[0];

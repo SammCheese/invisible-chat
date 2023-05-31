@@ -29,6 +29,7 @@ export async function start(): Promise<void> {
     Indicator,
   };
 }
+
 export function stop(): void {
   injector.uninjectAll();
 }
@@ -79,3 +80,7 @@ export async function buildEmbed(message: DiscordMessage, revealed: string): Pro
 }
 
 export { Settings } from "./components/Settings";
+
+export { chatbarLock } from "./assets/chatbarLock";
+
+export { popoverIcon } from "./assets/popoverIcon";

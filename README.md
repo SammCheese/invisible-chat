@@ -2,7 +2,7 @@
 
 Encrypt your Messages with the power of Stegcloak
 
-[![Install](https://img.shields.io/badge/-Install%20in%20Replugged-blue?style=for-the-badge&logo=none)](https://replugged.dev/install?identifier=SammCheese/Invisible-Chat&source=github)
+[![Install](https://img.shields.io/badge/-Install%20in%20Replugged-blue?style=for-the-badge&logo=none)](https://replugged.dev/install?identifier=dev.sammcheese.InvisibleChat)
 
 ## Install
 

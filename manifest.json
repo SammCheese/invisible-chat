@@ -9,8 +9,8 @@
   },
   "version": "1.2.8",
   "updater": {
-    "type": "github",
-    "id": "SammCheese/invisible-chat"
+    "type": "store",
+    "id": "dev.sammcheese.InvisibleChat"
   },
   "license": "Unlicensed",
   "type": "replugged-plugin",

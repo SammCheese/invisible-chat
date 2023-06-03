@@ -7,7 +7,7 @@
     "discordID": "372148345894076416",
     "github": "SammCheese"
   },
-  "version": "1.2.7",
+  "version": "1.2.8",
   "updater": {
     "type": "github",
     "id": "SammCheese/invisible-chat"

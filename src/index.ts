@@ -35,6 +35,7 @@ export function stop(): void {
 }
 
 function injectPopover(): void {
+  // @ts-expect-error eat a dick
   injector.utils.addPopoverButton((message: DiscordMessage) => {
     const isEncrypted = INV_DETECTION.test(message.content);
 

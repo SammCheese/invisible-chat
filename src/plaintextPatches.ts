@@ -8,7 +8,7 @@ const patches: types.PlaintextPatch[] = [
         // Message Indicator
         match: /var .,.,.=(.)\.className,.=.\.message,.=.\.children,.=.\.content,.=.\.onUpdate/,
         replace:
-          "try{$1?.content[0].match(window.invisiblechat?.INV_DETECTION)?$1?.content.push(window.invisiblechat?.Indicator):null}catch(e){};$&",
+          "try{$1?.message?.content.match(window.invisiblechat?.INV_DETECTION)?$1?.content.push(window.invisiblechat?.Indicator):null}catch(e){};$&",
       },
     ],
   },

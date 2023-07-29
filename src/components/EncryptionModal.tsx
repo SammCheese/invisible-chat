@@ -20,7 +20,7 @@ function EncModal(props: ModalProps) {
   let [password, setPassword] = React.useState(defaultPassword);
   let [DontUseCover, setDontUseCover] = React.useState(false);
 
-  const valid = secret && (DontUseCover || (cover && /\w \w/.test(cover)));
+  const valid = secret && (DontUseCover || (cover && cover.trim().split(" ").length > 1));
 
   return (
     <Modal.ModalRoot {...props}>
